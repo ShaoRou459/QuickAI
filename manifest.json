@@ -1,0 +1,42 @@
+{
+  "manifest_version": 2,
+  "name": "AI Text Assistant",
+  "version": "1.0.0",
+  "description": "AI-powered text editing commands using OpenAI API",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ai-text-assistant@example.com"
+    }
+  },
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "tabs",
+    "storage",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["marked.min.js", "katex.min.js", "content.js"],
+      "css": ["katex.min.css", "content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "AI Text Assistant",
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "48": "icon.png"
+  }
+}

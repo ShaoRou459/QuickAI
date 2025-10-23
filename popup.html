@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Text Assistant</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      width: 440px;
+      height: auto;
+    }
+
+    body {
+      width: 440px;
+      min-height: 500px;
+      padding: 0;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: #ffffff;
+      color: #37352f;
+      font-size: 14px;
+    }
+
+    .header {
+      padding: 20px 20px 16px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #fafafa;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+      color: #37352f;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #787774;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .section {
+      margin-bottom: 0;
+      padding: 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #37352f;
+      margin: 0 0 16px 0;
+      padding: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      background: white;
+      border: 1px solid #e0e0e0;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      font-size: 12px;
+      font-weight: 500;
+      color: #37352f;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .theme-toggle:hover {
+      background: #f7f6f3;
+      border-color: #37352f;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle:active {
+      transform: translateY(0);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #37352f;
+      margin-bottom: 6px;
+    }
+
+    .required {
+      color: #eb5757;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 13px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #37352f;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:hover {
+      border-color: #c0c0c0;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #37352f;
+      box-shadow: 0 0 0 3px rgba(55, 53, 47, 0.08);
+    }
+
+    .input-field::placeholder {
+      color: #9b9a97;
+    }
+
+    .help-text {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #787774;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: #37352f;
+      color: white;
+      width: 100%;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary:hover {
+      background: #2c2a26;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #37352f;
+      border: 1px solid #e0e0e0;
+      width: 100%;
+      margin-top: 8px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-secondary:hover {
+      background: #f7f6f3;
+      border-color: #c0c0c0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .status-message {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .status-message.success {
+      background: #f0f9f4;
+      color: #22863a;
+      border-left: 3px solid #22863a;
+    }
+
+    .status-message.error {
+      background: #fff5f5;
+      color: #eb5757;
+      border-left: 3px solid #eb5757;
+    }
+
+    .status-message.info {
+      background: #f0f4ff;
+      color: #0366d6;
+      border-left: 3px solid #0366d6;
+    }
+
+    .commands-list {
+      background: #f7f6f3;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .commands-list ul {
+      margin: 8px 0 0 20px;
+      padding: 0;
+      line-height: 1.8;
+      color: #787774;
+    }
+
+    /* Dark mode */
+    body.dark-mode {
+      background: #1a1a1a;
+      color: #e4e4e4;
+    }
+
+    body.dark-mode h2,
+    body.dark-mode .section-title,
+    body.dark-mode label {
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .subtitle,
+    body.dark-mode .help-text,
+    body.dark-mode .commands-list ul {
+      color: #9b9b9b;
+    }
+
+    body.dark-mode .section-title {
+      border-bottom-color: #333;
+    }
+
+    body.dark-mode .input-field {
+      background: #2a2a2a;
+      border-color: #444;
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .input-field:focus {
+      border-color: #666;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .input-field::placeholder {
+      color: #666;
+    }
+
+    body.dark-mode .btn-primary {
+      background: #e4e4e4;
+      color: #1a1a1a;
+    }
+
+    body.dark-mode .btn-primary:hover {
+      background: #f0f0f0;
+    }
+
+    body.dark-mode .btn-secondary {
+      background: #2a2a2a;
+      color: #e4e4e4;
+      border-color: #444;
+    }
+
+    body.dark-mode .btn-secondary:hover {
+      background: #333;
+    }
+
+    body.dark-mode .theme-toggle {
+      border-color: #444;
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .theme-toggle:hover {
+      background: #2a2a2a;
+      border-color: #666;
+    }
+
+    body.dark-mode .commands-list {
+      background: #2a2a2a;
+    }
+
+    body.dark-mode .status-message.success {
+      background: #1a3a2a;
+      color: #4caf50;
+      border-left-color: #4caf50;
+    }
+
+    body.dark-mode .status-message.error {
+      background: #3a1a1a;
+      color: #f44336;
+      border-left-color: #f44336;
+    }
+
+    body.dark-mode .status-message.info {
+      background: #1a2a3a;
+      color: #2196f3;
+      border-left-color: #2196f3;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      background: #fafafa;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 0 20px;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #787774;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .tab:hover {
+      color: #37352f;
+      background: rgba(55, 53, 47, 0.03);
+    }
+
+    .tab.active {
+      color: #37352f;
+      border-bottom-color: #37352f;
+      background: white;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* History */
+    .history-list {
+      max-height: 450px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .history-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .history-list::-webkit-scrollbar-track {
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+      background: #c0c0c0;
+      border-radius: 4px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb:hover {
+      background: #a0a0a0;
+    }
+
+    .history-item {
+      padding: 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: white;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .history-item:hover {
+      border-color: #c0c0c0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .history-command {
+      font-weight: 600;
+      color: #37352f;
+    }
+
+    .history-time {
+      font-size: 11px;
+      color: #9b9a97;
+    }
+
+    .history-text {
+      margin: 4px 0;
+      color: #787774;
+      line-height: 1.4;
+    }
+
+    .history-text strong {
+      color: #37352f;
+      display: block;
+      margin-top: 8px;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-small:hover {
+      background: #f7f6f3;
+      border-color: #c0c0c0;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-small:active {
+      transform: translateY(0);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #9b9a97;
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Advanced settings */
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      transition: all 0.2s ease;
+    }
+
+    .toggle-group:hover {
+      border-color: #c0c0c0;
+      background: #fafafa;
+    }
+
+    .toggle-group label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      flex: 0 1 auto;
+      user-select: none;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input[type="checkbox"] {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #e0e0e0;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: #37352f;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(18px);
+    }
+
+    .toggle-switch:hover .toggle-slider {
+      background: #c0c0c0;
+    }
+
+    .toggle-switch input:checked:hover + .toggle-slider {
+      background: #2c2a26;
+    }
+
+    textarea.input-field {
+      min-height: 90px;
+      resize: vertical;
+      font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .prompt-editor {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid #f0f0f0;
+    }
+
+    .prompt-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .reset-btn {
+      font-size: 11px;
+      color: #0366d6;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      text-decoration: underline;
+    }
+
+    .reset-btn:hover {
+      color: #0550ae;
+    }
+
+    /* Dark mode additions */
+    body.dark-mode .header {
+      background: #1a1a1a;
+      border-bottom-color: #333;
+    }
+
+    body.dark-mode .tabs {
+      background: #1a1a1a;
+      border-bottom-color: #333;
+    }
+
+    body.dark-mode .tab {
+      color: #9b9b9b;
+    }
+
+    body.dark-mode .tab:hover {
+      color: #e4e4e4;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    body.dark-mode .tab.active {
+      color: #e4e4e4;
+      border-bottom-color: #e4e4e4;
+      background: #2a2a2a;
+    }
+
+    body.dark-mode .section {
+      border-bottom-color: #333;
+    }
+
+    body.dark-mode .prompt-editor {
+      background: #1a1a1a;
+      border-color: #333;
+    }
+
+    body.dark-mode .toggle-group {
+      background: #1a1a1a;
+      border-color: #444;
+    }
+
+    body.dark-mode .toggle-group:hover {
+      background: #2a2a2a;
+      border-color: #555;
+    }
+
+    body.dark-mode .toggle-slider {
+      background: #444;
+    }
+
+    body.dark-mode .toggle-slider:before {
+      background: #e4e4e4;
+    }
+
+    body.dark-mode .toggle-switch input:checked + .toggle-slider {
+      background: #e4e4e4;
+    }
+
+    body.dark-mode .toggle-switch input:checked + .toggle-slider:before {
+      background: #1a1a1a;
+    }
+
+    body.dark-mode .toggle-switch:hover .toggle-slider {
+      background: #555;
+    }
+
+    body.dark-mode .toggle-switch input:checked:hover + .toggle-slider {
+      background: #f0f0f0;
+    }
+
+    body.dark-mode .history-item {
+      background: #2a2a2a;
+      border-color: #444;
+    }
+
+    body.dark-mode .history-command {
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .history-text {
+      color: #9b9b9b;
+    }
+
+    body.dark-mode .history-text strong {
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .theme-toggle {
+      background: #2a2a2a;
+      border-color: #444;
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .theme-toggle:hover {
+      background: #333;
+      border-color: #666;
+    }
+
+    body.dark-mode .btn-small {
+      background: #2a2a2a;
+      border-color: #444;
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .btn-small:hover {
+      background: #333;
+    }
+
+    body.dark-mode .empty-state {
+      color: #666;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>AI Text Assistant</h2>
+    <p class="subtitle">Configure your API settings and use AI commands via right-click menu</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="settings">Settings</button>
+    <button class="tab" data-tab="history">History</button>
+    <button class="tab" data-tab="advanced">Advanced</button>
+  </div>
+
+  <!-- Settings Tab -->
+  <div class="tab-content active" id="settings-tab">
+  <div class="section">
+    <div class="section-title">
+      <span>API Settings</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" title="Toggle dark mode">
+        <span class="theme-icon">Dark</span>
+      </button>
+    </div>
+
+    <form id="settings-form">
+      <div class="form-group">
+        <label for="base-url">Base URL</label>
+        <input
+          type="text"
+          id="base-url"
+          name="baseUrl"
+          placeholder="https://api.openai.com/v1"
+          class="input-field"
+        >
+        <p class="help-text">API endpoint URL</p>
+      </div>
+
+      <div class="form-group">
+        <label for="api-key">API Key <span class="required">*</span></label>
+        <input
+          type="password"
+          id="api-key"
+          name="apiKey"
+          placeholder="sk-..."
+          required
+          class="input-field"
+        >
+        <p class="help-text">Your OpenAI API key</p>
+      </div>
+
+      <div class="form-group">
+        <label for="model">Model</label>
+        <input
+          type="text"
+          id="model"
+          name="model"
+          placeholder="gpt-4o-mini"
+          class="input-field"
+        >
+        <p class="help-text">AI model name (e.g., gpt-4o-mini, gpt-4, claude-3-5-sonnet)</p>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save Settings</button>
+      <button type="button" id="test-connection" class="btn btn-secondary">Test Connection</button>
+    </form>
+
+    <div id="status-message" class="status-message"></div>
+  </div>
+  </div>
+
+  <!-- History Tab -->
+  <div class="tab-content" id="history-tab">
+    <div class="section">
+      <div class="section-title">
+        <span>History</span>
+        <button type="button" id="clear-history" class="btn-small" style="margin-left: auto;">Clear All</button>
+      </div>
+
+      <div id="history-list" class="history-list">
+        <div class="empty-state">
+          <p>No history yet. Start using AI commands to see them here!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advanced Tab -->
+  <div class="tab-content" id="advanced-tab">
+    <div class="section">
+      <div class="section-title">Context Settings</div>
+
+      <div class="toggle-group">
+        <label for="include-page-title">Include page title in context</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="include-page-title" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-group">
+        <label for="include-text-context">Include surrounding text (±200 chars)</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="include-text-context" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-group">
+        <label for="debug-mode">Debug mode (show prompts in console)</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="debug-mode">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Custom Prompts</div>
+      <p class="help-text" style="margin-bottom: 16px;">Customize the AI prompts for each command. Use {text} as placeholder for selected text.</p>
+
+      <div class="prompt-editor">
+        <div class="prompt-label">
+          <label for="prompt-fix-spelling">Fix Spelling</label>
+          <button type="button" class="reset-btn" data-command="fix-spelling">Reset to default</button>
+        </div>
+        <textarea id="prompt-fix-spelling" class="input-field" placeholder="Loading..."></textarea>
+      </div>
+
+      <div class="prompt-editor">
+        <div class="prompt-label">
+          <label for="prompt-continue-writing">Continue Writing</label>
+          <button type="button" class="reset-btn" data-command="continue-writing">Reset to default</button>
+        </div>
+        <textarea id="prompt-continue-writing" class="input-field" placeholder="Loading..."></textarea>
+      </div>
+
+      <div class="prompt-editor">
+        <div class="prompt-label">
+          <label for="prompt-suggest-rewrites">Suggest Rewrites</label>
+          <button type="button" class="reset-btn" data-command="suggest-rewrites">Reset to default</button>
+        </div>
+        <textarea id="prompt-suggest-rewrites" class="input-field" placeholder="Loading..."></textarea>
+      </div>
+
+      <div class="prompt-editor">
+        <div class="prompt-label">
+          <label for="prompt-explain">Explain</label>
+          <button type="button" class="reset-btn" data-command="explain">Reset to default</button>
+        </div>
+        <textarea id="prompt-explain" class="input-field" placeholder="Loading..."></textarea>
+      </div>
+
+      <button type="button" id="save-advanced" class="btn btn-primary">Save Advanced Settings</button>
+      <div id="advanced-status" class="status-message"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

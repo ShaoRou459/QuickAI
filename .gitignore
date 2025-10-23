@@ -1,0 +1,30 @@
+# Extension build artifacts
+*.zip
+web-ext-artifacts/
+
+# Backup files
+*.backup
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node modules (if you add any build tools later)
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Test files
+background-test.js
+
+# Claude Code settings
+.claude/
