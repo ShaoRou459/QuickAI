@@ -1,11 +1,11 @@
 {
   "manifest_version": 2,
-  "name": "AI Text Assistant",
+  "name": "QuickAI",
   "version": "1.0.0",
-  "description": "AI-powered text editing commands using OpenAI API",
+  "description": "Lightning-fast AI text assistant with smart context awareness. Fix spelling, continue writing, get rewrites, and explain text instantly.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "ai-text-assistant@example.com"
+      "id": "quickai@example.com"
     }
   },
   "permissions": [
@@ -33,7 +33,7 @@
   },
   "browser_action": {
     "default_popup": "popup.html",
-    "default_title": "AI Text Assistant",
+    "default_title": "QuickAI",
     "default_icon": "icon.png"
   },
   "icons": {

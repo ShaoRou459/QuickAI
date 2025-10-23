@@ -1,4 +1,15 @@
-<svg width="48" height="48" xmlns="http://www.w3.org/2000/svg">
-  <rect width="48" height="48" rx="8" fill="#37352f"/>
-  <text x="24" y="33" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle">AI</text>
+<svg width="128" height="128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners -->
+  <rect width="128" height="128" rx="28" fill="#37352f"/>
+
+  <!-- Lightning bolt symbol (representing "Quick") -->
+  <path d="M 64 28 L 52 64 L 68 64 L 56 100 L 88 58 L 72 58 L 84 28 Z"
+        fill="#ffffff"
+        opacity="0.95"/>
+
+  <!-- Minimalist sparkles (representing "AI") -->
+  <circle cx="90" cy="40" r="3" fill="#ffffff" opacity="0.7"/>
+  <circle cx="40" cy="90" r="2.5" fill="#ffffff" opacity="0.7"/>
+  <circle cx="96" cy="84" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="42" cy="36" r="2" fill="#ffffff" opacity="0.6"/>
 </svg>

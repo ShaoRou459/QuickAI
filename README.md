@@ -1,12 +1,18 @@
-# AI Text Assistant - Firefox Extension
+# ⚡ QuickAI - Firefox Extension
 
-A minimalistic Firefox extension that adds AI-powered text editing commands to your browser's context menu. Built with a clean, Notion-like design.
+Lightning-fast AI text assistant with smart context awareness. Fix spelling, continue writing, get rewrites, and explain text instantly - all with a minimalistic, Notion-like design.
 
 ## Features
 
 - **Fix Spelling**: Correct spelling and grammar errors in selected text
 - **Continue Writing**: Let AI continue your text in the same style and tone
 - **Suggest Rewrites**: Get multiple alternative ways to rewrite your text
+- **Explain**: Get clear explanations with markdown and LaTeX math support
+- **Smart Context**: Uses page title and surrounding text (±200 chars) for better understanding
+- **History Logging**: Track your last 100 AI interactions
+- **Custom Prompts**: Fully customizable AI prompts for each command
+- **Debug Mode**: View full prompts in console for development
+- **Dark Mode**: Beautiful dark theme support
 
 ## Installation
 
@@ -20,7 +26,7 @@ A minimalistic Firefox extension that adds AI-powered text editing commands to y
 
 ### Configuration
 
-1. Click the extension icon in the toolbar or right-click any selected text and go to AI Assistant menu
+1. Click the QuickAI icon in the toolbar or right-click any selected text and go to AI Assistant menu
 2. Click "Open Settings" (or navigate to the extension settings)
 3. Configure your API settings:
    - **Base URL**: OpenAI API endpoint (default: `https://api.openai.com/v1`)
