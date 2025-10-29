@@ -47,11 +47,57 @@ async function toggleTheme() {
 
 themeToggle.addEventListener('click', toggleTheme);
 
+// Provider configurations
+const PROVIDER_CONFIG = {
+  openai: {
+    name: 'OpenAI',
+    defaultBaseUrl: 'https://api.openai.com/v1',
+    defaultModel: 'gpt-4o',
+    apiKeyHelp: 'Your OpenAI API key (required)'
+  },
+  anthropic: {
+    name: 'Anthropic Claude',
+    defaultBaseUrl: 'https://api.anthropic.com/v1',
+    defaultModel: 'claude-3-5-sonnet-20241022',
+    apiKeyHelp: 'Your Anthropic API key (required)'
+  },
+  google: {
+    name: 'Google Gemini',
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    defaultModel: 'gemini-1.5-pro',
+    apiKeyHelp: 'Your Google AI API key (required)'
+  }
+};
+
+// Update form fields based on selected provider
+function updateProviderFields(provider) {
+  const config = PROVIDER_CONFIG[provider];
+  const baseUrlInput = document.getElementById('base-url');
+  const modelInput = document.getElementById('model');
+  const apiKeyHelp = document.getElementById('api-key-help');
+
+  // Update base URL
+  baseUrlInput.value = config.defaultBaseUrl;
+  baseUrlInput.placeholder = config.defaultBaseUrl;
+
+  // Update model placeholder with default model
+  modelInput.placeholder = `e.g., ${config.defaultModel}`;
+
+  // Update API key help text
+  apiKeyHelp.textContent = config.apiKeyHelp;
+}
+
 // Load saved settings
 async function loadSettings() {
   try {
-    const settings = await browser.storage.sync.get(['apiKey', 'baseUrl', 'model']);
+    const settings = await browser.storage.sync.get(['provider', 'apiKey', 'baseUrl', 'model']);
 
+    // Set provider first
+    const provider = settings.provider || 'openai';
+    document.getElementById('provider').value = provider;
+    updateProviderFields(provider);
+
+    // Then set other settings
     if (settings.baseUrl) {
       baseUrlInput.value = settings.baseUrl;
     }
@@ -71,10 +117,14 @@ let autoSaveTimeout;
 function autoSave() {
   clearTimeout(autoSaveTimeout);
   autoSaveTimeout = setTimeout(async () => {
+    const provider = document.getElementById('provider').value;
+    const config = PROVIDER_CONFIG[provider];
+    
     const settings = {
-      baseUrl: baseUrlInput.value || 'https://api.openai.com/v1',
+      provider: provider,
+      baseUrl: baseUrlInput.value || config.defaultBaseUrl,
       apiKey: apiKeyInput.value,
-      model: modelInput.value || 'gpt-4o-mini'
+      model: modelInput.value || config.defaultModel
     };
 
     try {
@@ -96,10 +146,14 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const formData = new FormData(form);
+  const provider = formData.get('provider');
+  const config = PROVIDER_CONFIG[provider];
+  
   const settings = {
-    baseUrl: formData.get('baseUrl') || 'https://api.openai.com/v1',
+    provider: provider,
+    baseUrl: formData.get('baseUrl') || config.defaultBaseUrl,
     apiKey: formData.get('apiKey'),
-    model: formData.get('model') || 'gpt-3.5-turbo'
+    model: formData.get('model') || config.defaultModel
   };
 
   try {
@@ -112,9 +166,10 @@ form.addEventListener('submit', async (e) => {
 
 // Test connection
 testButton.addEventListener('click', async () => {
+  const provider = document.getElementById('provider').value;
   const apiKey = document.getElementById('api-key').value;
-  const baseUrl = document.getElementById('base-url').value || 'https://api.openai.com/v1';
-  const model = document.getElementById('model').value || 'gpt-4o-mini';
+  const baseUrl = document.getElementById('base-url').value || PROVIDER_CONFIG[provider].defaultBaseUrl;
+  const model = document.getElementById('model').value || PROVIDER_CONFIG[provider].defaultModel;
 
   if (!apiKey) {
     showStatus('Please enter an API key first', 'error');
@@ -126,24 +181,45 @@ testButton.addEventListener('click', async () => {
   showStatus('Testing connection...', 'info');
 
   try {
-    const response = await fetch(`${baseUrl}/chat/completions`, {
+    let apiEndpoint, requestBody;
+
+    if (provider === 'google') {
+      apiEndpoint = `${baseUrl}/models/${model}:generateContent`;
+      requestBody = {
+        contents: [{ parts: [{ text: 'Hi' }] }],
+        generationConfig: { maxOutputTokens: 5 }
+      };
+    } else if (provider === 'anthropic') {
+      apiEndpoint = `${baseUrl}/messages`;
+      requestBody = {
+        model: model,
+        max_tokens: 5,
+        messages: [{ role: 'user', content: 'Hi' }]
+      };
+    } else {
+      // OpenAI and custom providers
+      apiEndpoint = `${baseUrl}/chat/completions`;
+      requestBody = {
+        model: model,
+        messages: [{ role: 'user', content: 'Hi' }],
+        max_tokens: 5
+      };
+    }
+
+    const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify({
-        model: model,
-        messages: [{ role: 'user', content: 'Hi' }],
-        max_tokens: 5
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (response.ok) {
       showStatus('✓ Connection successful!', 'success');
     } else {
       const error = await response.json();
-      showStatus('Connection failed: ' + (error.error?.message || 'Unknown error'), 'error');
+      showStatus('Connection failed: ' + (error.error?.message || error.message || 'Unknown error'), 'error');
     }
   } catch (error) {
     showStatus('Connection failed: ' + error.message, 'error');
@@ -292,14 +368,27 @@ async function loadAdvancedSettings() {
       'customPrompts',
       'includePageTitle',
       'includeTextContext',
-      'debugMode'
+      'debugMode',
+      'saveHistory',
+      'showContextMenu',
+      'quickMenuShortcut',
+      'enablePopupWorkflow'
     ]);
 
     console.log('Loaded settings:', settings);
 
     const customPrompts = settings.customPrompts || {};
 
-    // Load checkboxes
+    // Load general settings
+    document.getElementById('save-history').checked = settings.saveHistory !== false;
+    document.getElementById('show-context-menu').checked = settings.showContextMenu !== false;
+    document.getElementById('enable-popup-workflow').checked = settings.enablePopupWorkflow || false;
+
+    // Load keyboard shortcut
+    const shortcut = settings.quickMenuShortcut || { ctrl: true, shift: true, key: 'Space' };
+    document.getElementById('quick-menu-shortcut').value = formatShortcut(shortcut);
+
+    // Load context settings
     document.getElementById('include-page-title').checked = settings.includePageTitle !== false;
     document.getElementById('include-text-context').checked = settings.includeTextContext !== false;
     document.getElementById('debug-mode').checked = settings.debugMode || false;
@@ -315,6 +404,70 @@ async function loadAdvancedSettings() {
     console.error('Error loading advanced settings:', error);
   }
 }
+
+// Format shortcut for display
+function formatShortcut(shortcut) {
+  const parts = [];
+  if (shortcut.ctrl) parts.push('Ctrl');
+  if (shortcut.alt) parts.push('Alt');
+  if (shortcut.shift) parts.push('Shift');
+  if (shortcut.meta) parts.push('Cmd');
+  parts.push(shortcut.key);
+  return parts.join('+');
+}
+
+// Keyboard shortcut recording
+let recordingShortcut = false;
+let currentShortcut = null;
+
+document.getElementById('quick-menu-shortcut').addEventListener('click', () => {
+  if (recordingShortcut) return;
+
+  recordingShortcut = true;
+  const input = document.getElementById('quick-menu-shortcut');
+  input.value = 'Press keys...';
+  input.classList.add('recording');
+});
+
+document.getElementById('quick-menu-shortcut').addEventListener('keydown', async (e) => {
+  if (!recordingShortcut) return;
+
+  e.preventDefault();
+
+  if (e.key === 'Escape') {
+    recordingShortcut = false;
+    const input = document.getElementById('quick-menu-shortcut');
+    const settings = await browser.storage.sync.get('quickMenuShortcut');
+    const shortcut = settings.quickMenuShortcut || { ctrl: true, shift: true, key: 'Space' };
+    input.value = formatShortcut(shortcut);
+    input.classList.remove('recording');
+    return;
+  }
+
+  // Ignore modifier keys alone
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+
+  currentShortcut = {
+    ctrl: e.ctrlKey,
+    alt: e.altKey,
+    shift: e.shiftKey,
+    meta: e.metaKey,
+    key: e.key === ' ' ? 'Space' : e.key
+  };
+
+  const input = document.getElementById('quick-menu-shortcut');
+  input.value = formatShortcut(currentShortcut);
+
+  // Save immediately
+  await browser.storage.sync.set({ quickMenuShortcut: currentShortcut });
+
+  // Reset recording state
+  setTimeout(() => {
+    recordingShortcut = false;
+    input.classList.remove('recording');
+    showAdvancedStatus('Shortcut saved! Reload pages to apply.', 'success');
+  }, 500);
+});
 
 // Reset buttons
 document.querySelectorAll('.reset-btn').forEach(btn => {
@@ -339,7 +492,10 @@ document.getElementById('save-advanced').addEventListener('click', async () => {
       customPrompts,
       includePageTitle: document.getElementById('include-page-title').checked,
       includeTextContext: document.getElementById('include-text-context').checked,
-      debugMode: document.getElementById('debug-mode').checked
+      debugMode: document.getElementById('debug-mode').checked,
+      saveHistory: document.getElementById('save-history').checked,
+      showContextMenu: document.getElementById('show-context-menu').checked,
+      enablePopupWorkflow: document.getElementById('enable-popup-workflow').checked
     });
 
     showAdvancedStatus('Advanced settings saved successfully!', 'success');
@@ -373,6 +529,240 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Collapsible sections
+document.addEventListener('DOMContentLoaded', () => {
+  const collapsibleHeaders = document.querySelectorAll('.section-title.collapsible');
+  
+  collapsibleHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+      const content = header.nextElementSibling;
+      const isCollapsed = header.classList.contains('collapsed');
+      
+      if (isCollapsed) {
+        header.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+      } else {
+        header.classList.add('collapsed');
+        content.classList.add('collapsed');
+      }
+    });
+  });
+});
+
+// Provider change handler
+document.getElementById('provider').addEventListener('change', (e) => {
+  updateProviderFields(e.target.value);
+});
+
+// Initialize popup - decide whether to show settings or command interface
+async function initializePopup() {
+  await loadTheme();
+
+  try {
+    const settings = await browser.storage.sync.get('enablePopupWorkflow');
+    const popupWorkflowEnabled = settings.enablePopupWorkflow || false;
+
+    if (popupWorkflowEnabled) {
+      // Check if there's selected text on the active tab
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      if (tabs.length > 0) {
+        try {
+          const response = await browser.tabs.sendMessage(tabs[0].id, { type: 'get-selection' });
+
+          if (response && response.text && response.text.trim().length > 0) {
+            // Show command interface instead of settings
+            showCommandInterface(response.text, tabs[0].id);
+            return;
+          }
+        } catch (e) {
+          // Content script not loaded or error - fall through to settings
+          console.log('Could not get selection:', e);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error checking popup workflow:', e);
+  }
+
+  // Default: show settings
+  loadSettings();
+}
+
+// Show command interface for selected text
+function showCommandInterface(selectedText, tabId) {
+  // Hide the regular popup UI
+  document.querySelector('.header').style.display = 'none';
+  document.querySelector('.tabs').style.display = 'none';
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+
+  // Create command interface
+  const commandInterface = document.createElement('div');
+  commandInterface.id = 'command-interface';
+  commandInterface.innerHTML = `
+    <div class="command-header">
+      <h2>QuickAI Commands</h2>
+      <p class="subtitle">Selected: "${truncate(selectedText, 50)}"</p>
+    </div>
+    <div class="command-list">
+      <button class="command-btn" data-command="fix-spelling">
+        <span class="command-icon">✓</span>
+        <div class="command-text">
+          <div class="command-label">Improve Writing</div>
+          <div class="command-desc">Fix spelling & grammar</div>
+        </div>
+      </button>
+      <button class="command-btn" data-command="continue-writing">
+        <span class="command-icon">→</span>
+        <div class="command-text">
+          <div class="command-label">Continue Writing</div>
+          <div class="command-desc">Continue in same style</div>
+        </div>
+      </button>
+      <button class="command-btn" data-command="suggest-rewrites">
+        <span class="command-icon">⟳</span>
+        <div class="command-text">
+          <div class="command-label">Suggest Rewrites</div>
+          <div class="command-desc">Get alternatives</div>
+        </div>
+      </button>
+      <button class="command-btn" data-command="explain">
+        <span class="command-icon">?</span>
+        <div class="command-text">
+          <div class="command-label">Explain</div>
+          <div class="command-desc">Get explanation</div>
+        </div>
+      </button>
+    </div>
+    <div class="command-footer">
+      <button class="btn btn-secondary" id="goto-settings">Go to Settings</button>
+    </div>
+  `;
+
+  document.body.appendChild(commandInterface);
+
+  // Add styles for command interface
+  const style = document.createElement('style');
+  style.textContent = `
+    #command-interface {
+      padding: 0;
+    }
+    .command-header {
+      padding: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #fafafa;
+    }
+    .command-header h2 {
+      font-size: 20px;
+      margin: 0 0 4px 0;
+    }
+    .command-header .subtitle {
+      font-size: 13px;
+      color: #787774;
+      margin: 0;
+    }
+    .command-list {
+      padding: 16px;
+    }
+    .command-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      text-align: left;
+    }
+    .command-btn:hover {
+      background: #f7f6f3;
+      border-color: #37352f;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    .command-btn:active {
+      transform: translateY(0);
+    }
+    .command-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .command-text {
+      flex: 1;
+    }
+    .command-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #37352f;
+      margin-bottom: 2px;
+    }
+    .command-desc {
+      font-size: 12px;
+      color: #787774;
+    }
+    .command-footer {
+      padding: 16px;
+      border-top: 1px solid #e0e0e0;
+    }
+    body.dark-mode .command-header {
+      background: #1a1a1a;
+      border-bottom-color: #333;
+    }
+    body.dark-mode .command-header .subtitle {
+      color: #9b9b9b;
+    }
+    body.dark-mode .command-btn {
+      background: #2a2a2a;
+      border-color: #444;
+    }
+    body.dark-mode .command-btn:hover {
+      background: #333;
+      border-color: #666;
+    }
+    body.dark-mode .command-label {
+      color: #e4e4e4;
+    }
+    body.dark-mode .command-desc {
+      color: #9b9b9b;
+    }
+    body.dark-mode .command-footer {
+      border-top-color: #333;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Add event listeners
+  document.querySelectorAll('.command-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const command = btn.dataset.command;
+
+      // Send message to background to process
+      try {
+        await browser.runtime.sendMessage({
+          type: 'execute-command',
+          command: command,
+          selectedText: selectedText,
+          tabId: tabId
+        });
+
+        // Close popup after executing
+        window.close();
+      } catch (e) {
+        console.error('Error executing command:', e);
+        alert('Error: ' + e.message);
+      }
+    });
+  });
+
+  document.getElementById('goto-settings').addEventListener('click', () => {
+    // Reload to show settings
+    window.location.reload();
+  });
+}
+
 // Load settings and theme on page load
-loadTheme();
-loadSettings();
+initializePopup();

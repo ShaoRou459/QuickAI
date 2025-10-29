@@ -9,11 +9,11 @@
 [![Firefox Extension Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/yourusername/quickai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Firefox](https://img.shields.io/badge/firefox-88%2B-orange.svg)](https://www.mozilla.org/firefox/new/)
-[![OpenAI Compatible](https://img.shields.io/badge/API-OpenAI%20Compatible-00AA00.svg)](https://openai.com/api/)
+[![Multi-Provider](https://img.shields.io/badge/AI%20Providers-Multi--Provider-00AA00.svg)](#ai-providers)
 
 Fix spelling, continue writing, get rewrites, and explain text instantly - all with a minimalistic, Notion-like design.
 
-[Install Guide](#installation) • [Features](#features) • [Usage](#usage) • [Configuration](#configuration)
+[Install Guide](#installation) • [Features](#features) • [Usage](#usage) • [Configuration](#configuration) • [AI Providers](#ai-providers)
 
 </div>
 
@@ -21,7 +21,7 @@ Fix spelling, continue writing, get rewrites, and explain text instantly - all w
 
 - **🔧 Improve Writing**: Correct spelling and grammar errors in selected text
 - **✍️ Continue Writing**: Let AI continue your text in the same style and tone
-- **🔄 Suggest Rewrites**: Get multiple alternative ways to rewrite your text
+- **🔄 Suggest Rewrites**: Get multiple alternative ways to rewrite your text with clickable options
 - **❓ Explain**: Get clear explanations with markdown and LaTeX math support
 - **⌨️ Keyboard Shortcut**: Customizable quick menu shortcut (default: Ctrl+Shift+Space)
 - **🧠 Smart Context**: Uses page title and surrounding text (±200 chars) for better understanding
@@ -45,9 +45,10 @@ Fix spelling, continue writing, get rewrites, and explain text instantly - all w
 1. Click the QuickAI icon in the toolbar or right-click any selected text and go to AI Assistant menu
 2. Click "Open Settings" (or navigate to the extension settings)
 3. Configure your API settings:
-   - **Base URL**: OpenAI API endpoint (default: `https://api.openai.com/v1`)
-   - **API Key**: Your OpenAI API key (required)
-   - **Model**: Choose from available models (GPT-3.5 Turbo, GPT-4, etc.)
+   - **AI Provider**: Select your preferred AI provider (OpenAI, Anthropic Claude, Google Gemini, or Custom)
+   - **Base URL**: API endpoint URL (auto-filled based on provider)
+   - **API Key**: Your API key (required)
+   - **Model**: Choose from available models (auto-populated based on provider)
 4. Click "Test Connection" to verify your settings
 5. Click "Save Settings"
 
@@ -67,6 +68,7 @@ Fix spelling, continue writing, get rewrites, and explain text instantly - all w
    - **Accept**: Replace the selected text with the AI result
    - **Copy**: Copy the result to your clipboard
    - **Cancel**: Dismiss the popup
+   - **For Suggest Rewrites**: Click any of the numbered suggestion buttons to instantly use that rewrite
 
 ### Method 2: Keyboard Shortcut (Quick Menu)
 1. Select any text on a webpage
@@ -94,9 +96,33 @@ Navigate to the **Advanced** tab in settings to customize:
 - Use `{text}` as placeholder for selected text
 - Reset to defaults at any time
 
+## 🤖 AI Providers
+
+QuickAI supports multiple AI providers, giving you flexibility to choose the best model for your needs:
+
+### OpenAI
+- **Models**: GPT-3.5 Turbo, GPT-4, GPT-4 Turbo, GPT-4o, GPT-4o Mini
+- **API Endpoint**: `https://api.openai.com/v1`
+- **Getting Started**: Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+
+### Anthropic Claude
+- **Models**: Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku
+- **API Endpoint**: `https://api.anthropic.com/v1`
+- **Getting Started**: Get your API key from [Anthropic Console](https://console.anthropic.com/)
+
+### Google Gemini
+- **Models**: Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini Pro
+- **API Endpoint**: `https://generativelanguage.googleapis.com/v1beta`
+- **Getting Started**: Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+
+### Custom/OpenAI Compatible
+- **Models**: Any OpenAI-compatible model
+- **API Endpoint**: Custom endpoint URL
+- **Use Case**: Perfect for self-hosted models, local LLM setups, or other OpenAI-compatible APIs
+
 ## 🌐 Compatibility
 
-- Works with OpenAI API and any OpenAI-compatible endpoints
+- Works with OpenAI, Anthropic, Google, and custom OpenAI-compatible endpoints
 - Supports input fields, textareas, and contenteditable elements
 - Minimal permissions required
 - Compatible with Firefox 88+
@@ -143,7 +169,7 @@ aiextension/
 
 - **Pure JavaScript** (no frameworks)
 - **Firefox WebExtensions API**
-- **OpenAI API format**
+- **Multi-provider AI API support**
 - **KaTeX** for LaTeX math rendering
 - **Marked.js** for markdown parsing
 
@@ -163,7 +189,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [OpenAI](https://openai.com/) for the powerful API
+- [OpenAI](https://openai.com/) for the powerful GPT models
+- [Anthropic](https://anthropic.com/) for Claude models
+- [Google](https://ai.google.dev/) for Gemini models
 - [KaTeX](https://katex.org/) for beautiful math rendering
 - [Marked.js](https://marked.js.org/) for markdown parsing
 - Firefox extension documentation and community

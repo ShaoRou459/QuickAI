@@ -20,7 +20,7 @@ body {
 }
 
 header {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .header-content {
@@ -30,48 +30,60 @@ header {
 }
 
 .theme-toggle {
-  background: none;
-  border: none;
+  background: white;
+  border: 1px solid #e0e0e0;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background 0.15s ease;
-  font-size: 20px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 500;
+  color: #37352f;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .theme-toggle:hover {
   background: #f7f6f3;
+  border-color: #37352f;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
 }
 
 h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #37352f;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
-  font-size: 16px;
+  font-size: 14px;
   color: #787774;
+  line-height: 1.4;
 }
 
 main {
   background: #ffffff;
   border-radius: 8px;
-  padding: 32px;
+  padding: 24px;
   border: 1px solid #e0e0e0;
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 label {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #37352f;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .required {
@@ -81,19 +93,23 @@ label {
 .input-field {
   width: 100%;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 13px;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border-radius: 6px;
   background: #ffffff;
   color: #37352f;
   font-family: inherit;
-  transition: border-color 0.15s ease;
+  transition: all 0.2s ease;
+}
+
+.input-field:hover {
+  border-color: #c0c0c0;
 }
 
 .input-field:focus {
   outline: none;
   border-color: #37352f;
-  box-shadow: 0 0 0 3px rgba(55, 53, 47, 0.1);
+  box-shadow: 0 0 0 3px rgba(55, 53, 47, 0.08);
 }
 
 .input-field::placeholder {
@@ -108,54 +124,62 @@ label {
 
 .form-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 32px;
+  gap: 8px;
+  margin-top: 24px;
 }
 
 .btn {
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   font-family: inherit;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .btn-primary {
   background: #37352f;
   color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover {
   background: #2c2a26;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: #f7f6f3;
+  background: white;
   color: #37352f;
   border: 1px solid #e0e0e0;
 }
 
 .btn-secondary:hover {
-  background: #efeeeb;
+  background: #f7f6f3;
+  border-color: #c0c0c0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: translateY(0);
 }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none !important;
 }
 
 .status-message {
-  margin-top: 20px;
-  padding: 12px 16px;
+  margin-top: 12px;
+  padding: 10px 12px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -178,10 +202,10 @@ label {
 }
 
 footer {
-  margin-top: 40px;
+  margin-top: 24px;
   text-align: center;
   color: #787774;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 select.input-field {
@@ -249,8 +273,17 @@ body.dark-mode .btn-secondary:hover {
   background: #333;
 }
 
+body.dark-mode .theme-toggle {
+  background: #2a2a2a;
+  border-color: #444;
+  color: #e4e4e4;
+}
+
 body.dark-mode .theme-toggle:hover {
   background: #333;
+  border-color: #666;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
 body.dark-mode .status-message.success {

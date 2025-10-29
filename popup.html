@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Text Assistant</title>
+  <title>QuickAI</title>
   <style>
     * {
       box-sizing: border-box;
@@ -67,6 +67,42 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .section-title.collapsible {
+      cursor: pointer;
+      user-select: none;
+      padding: 12px 14px;
+      margin: -8px -8px 16px -8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .section-title.collapsible:hover {
+      background: rgba(55, 53, 47, 0.05);
+    }
+
+    .section-title.collapsible::after {
+      content: '▼';
+      font-size: 10px;
+      transition: transform 0.2s ease;
+      margin-left: 8px;
+    }
+
+    .section-title.collapsible.collapsed::after {
+      transform: rotate(-90deg);
+    }
+
+    .section-content {
+      max-height: 2000px;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      opacity: 1;
+    }
+
+    .section-content.collapsed {
+      max-height: 0;
+      opacity: 0;
     }
 
     .theme-toggle {
@@ -252,6 +288,10 @@
 
     body.dark-mode .section-title {
       border-bottom-color: #333;
+    }
+
+    body.dark-mode .section-title.collapsible:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
 
     body.dark-mode .input-field {
@@ -717,17 +757,39 @@
       color: #666;
     }
 
+    /* Shortcut input */
+    .shortcut-input {
+      cursor: pointer;
+      background: #f7f6f3;
+    }
+
+    .shortcut-input.recording {
+      background: #fff8e1;
+      border-color: #f57c00;
+    }
+
+    body.dark-mode .shortcut-input {
+      background: #2a2a2a;
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .shortcut-input.recording {
+      background: #3a3000;
+      border-color: #f57c00;
+      color: #ffeb3b;
+    }
+
   </style>
 </head>
 <body>
   <div class="header">
-    <h2>⚡ QuickAI</h2>
+    <h2>QuickAI | Settings</h2>
     <p class="subtitle">Lightning-fast AI text assistant with smart context awareness</p>
   </div>
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" data-tab="settings">Settings</button>
+    <button class="tab active" data-tab="settings">AI</button>
     <button class="tab" data-tab="history">History</button>
     <button class="tab" data-tab="advanced">Advanced</button>
   </div>
@@ -744,6 +806,16 @@
 
     <form id="settings-form">
       <div class="form-group">
+        <label for="provider">AI Provider</label>
+        <select id="provider" name="provider" class="input-field">
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic Claude</option>
+          <option value="google">Google Gemini</option>
+        </select>
+        <p class="help-text">Select your AI provider</p>
+      </div>
+
+      <div class="form-group">
         <label for="base-url">Base URL</label>
         <input
           type="text"
@@ -752,7 +824,7 @@
           placeholder="https://api.openai.com/v1"
           class="input-field"
         >
-        <p class="help-text">API endpoint URL</p>
+        <p class="help-text">API endpoint URL (auto-filled based on provider)</p>
       </div>
 
       <div class="form-group">
@@ -765,7 +837,7 @@
           required
           class="input-field"
         >
-        <p class="help-text">Your OpenAI API key</p>
+        <p class="help-text" id="api-key-help">Your API key (required)</p>
       </div>
 
       <div class="form-group">
@@ -774,10 +846,10 @@
           type="text"
           id="model"
           name="model"
-          placeholder="gpt-4o-mini"
+          placeholder="e.g., gpt-4, claude-3-5-sonnet-20241022"
           class="input-field"
         >
-        <p class="help-text">AI model name (e.g., gpt-4o-mini, gpt-4, claude-3-5-sonnet)</p>
+        <p class="help-text">Enter the model name manually (e.g., gpt-4, claude-3-5-sonnet-20241022)</p>
       </div>
 
       <button type="submit" class="btn btn-primary">Save Settings</button>
@@ -807,71 +879,119 @@
   <!-- Advanced Tab -->
   <div class="tab-content" id="advanced-tab">
     <div class="section">
-      <div class="section-title">Context Settings</div>
+      <div class="section-title collapsible">General Settings</div>
 
-      <div class="toggle-group">
-        <label for="include-page-title">Include page title in context</label>
-        <label class="toggle-switch">
-          <input type="checkbox" id="include-page-title" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+      <div class="section-content">
+        <div class="toggle-group">
+          <label for="save-history">Save command history</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="save-history" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
 
-      <div class="toggle-group">
-        <label for="include-text-context">Include surrounding text (±200 chars)</label>
-        <label class="toggle-switch">
-          <input type="checkbox" id="include-text-context" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+        <div class="toggle-group">
+          <label for="show-context-menu">Show in right-click context menu</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="show-context-menu" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
 
-      <div class="toggle-group">
-        <label for="debug-mode">Debug mode (show prompts in console)</label>
-        <label class="toggle-switch">
-          <input type="checkbox" id="debug-mode">
-          <span class="toggle-slider"></span>
-        </label>
+        <div class="toggle-group">
+          <label for="enable-popup-workflow">Enable popup workflow (for Google Docs)</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="enable-popup-workflow">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <p class="help-text" style="margin-top: -10px; margin-bottom: 12px;">When enabled, clicking the extension icon shows AI commands for selected text. Useful for sites where context menu doesn't work (Google Docs, etc.).</p>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="quick-menu-shortcut">Quick Menu Keyboard Shortcut</label>
+          <input
+            type="text"
+            id="quick-menu-shortcut"
+            class="input-field shortcut-input"
+            placeholder="Ctrl+Shift+Space"
+            readonly
+          >
+          <p class="help-text">Click to record a new shortcut. Press Esc to cancel.</p>
+        </div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">Custom Prompts</div>
-      <p class="help-text" style="margin-bottom: 16px;">Customize the AI prompts for each command. Use {text} as placeholder for selected text.</p>
+      <div class="section-title collapsible">Context Settings</div>
 
-      <div class="prompt-editor">
-        <div class="prompt-label">
-          <label for="prompt-fix-spelling">Fix Spelling</label>
-          <button type="button" class="reset-btn" data-command="fix-spelling">Reset to default</button>
+      <div class="section-content">
+        <div class="toggle-group">
+          <label for="include-page-title">Include page title in context</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="include-page-title" checked>
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <textarea id="prompt-fix-spelling" class="input-field" placeholder="Loading..."></textarea>
-      </div>
 
-      <div class="prompt-editor">
-        <div class="prompt-label">
-          <label for="prompt-continue-writing">Continue Writing</label>
-          <button type="button" class="reset-btn" data-command="continue-writing">Reset to default</button>
+        <div class="toggle-group">
+          <label for="include-text-context">Include surrounding text (±200 chars)</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="include-text-context" checked>
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <textarea id="prompt-continue-writing" class="input-field" placeholder="Loading..."></textarea>
-      </div>
 
-      <div class="prompt-editor">
-        <div class="prompt-label">
-          <label for="prompt-suggest-rewrites">Suggest Rewrites</label>
-          <button type="button" class="reset-btn" data-command="suggest-rewrites">Reset to default</button>
+        <div class="toggle-group">
+          <label for="debug-mode">Debug mode (show prompts in console)</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="debug-mode">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <textarea id="prompt-suggest-rewrites" class="input-field" placeholder="Loading..."></textarea>
       </div>
+    </div>
 
-      <div class="prompt-editor">
-        <div class="prompt-label">
-          <label for="prompt-explain">Explain</label>
-          <button type="button" class="reset-btn" data-command="explain">Reset to default</button>
+    <div class="section">
+      <div class="section-title collapsible">Custom Prompts</div>
+
+      <div class="section-content">
+        <p class="help-text" style="margin-bottom: 16px;">Customize the AI prompts for each command. Use {text} as placeholder for selected text.</p>
+
+        <div class="prompt-editor">
+          <div class="prompt-label">
+            <label for="prompt-fix-spelling">Improve Writing</label>
+            <button type="button" class="reset-btn" data-command="fix-spelling">Reset to default</button>
+          </div>
+          <textarea id="prompt-fix-spelling" class="input-field" placeholder="Loading..."></textarea>
         </div>
-        <textarea id="prompt-explain" class="input-field" placeholder="Loading..."></textarea>
-      </div>
 
-      <button type="button" id="save-advanced" class="btn btn-primary">Save Advanced Settings</button>
-      <div id="advanced-status" class="status-message"></div>
+        <div class="prompt-editor">
+          <div class="prompt-label">
+            <label for="prompt-continue-writing">Continue Writing</label>
+            <button type="button" class="reset-btn" data-command="continue-writing">Reset to default</button>
+          </div>
+          <textarea id="prompt-continue-writing" class="input-field" placeholder="Loading..."></textarea>
+        </div>
+
+        <div class="prompt-editor">
+          <div class="prompt-label">
+            <label for="prompt-suggest-rewrites">Suggest Rewrites</label>
+            <button type="button" class="reset-btn" data-command="suggest-rewrites">Reset to default</button>
+          </div>
+          <textarea id="prompt-suggest-rewrites" class="input-field" placeholder="Loading..."></textarea>
+        </div>
+
+        <div class="prompt-editor">
+          <div class="prompt-label">
+            <label for="prompt-explain">Explain</label>
+            <button type="button" class="reset-btn" data-command="explain">Reset to default</button>
+          </div>
+          <textarea id="prompt-explain" class="input-field" placeholder="Loading..."></textarea>
+        </div>
+
+        <button type="button" id="save-advanced" class="btn btn-primary">Save Advanced Settings</button>
+        <div id="advanced-status" class="status-message"></div>
+      </div>
     </div>
   </div>
 
