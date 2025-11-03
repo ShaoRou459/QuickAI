@@ -590,31 +590,40 @@ body.dark-mode .ai-popup-result pre {
 /* Reprompt input styles */
 .ai-reprompt-input-container {
   width: 100%;
+  padding: 12px 10px 8px 10px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 8px;
 }
 
 .ai-reprompt-input {
   width: 100%;
-  padding: 6px 10px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 2px solid #e0e0e0;
+  border-radius: 0;
   font-size: 13px;
   font-family: inherit;
-  background: #f7f6f3;
+  background: transparent;
   color: #37352f;
-  line-height: 1.4;
+  line-height: 1.5;
   box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.ai-reprompt-input:hover {
+  border-bottom-color: #c0c0c0;
 }
 
 .ai-reprompt-input:focus {
   outline: none;
-  border-color: #37352f;
-  background: white;
-  box-shadow: 0 0 0 2px rgba(55, 53, 47, 0.1);
+  border-bottom-color: #37352f;
+  background: transparent;
 }
 
 .ai-reprompt-input::placeholder {
   color: #9b9a97;
   font-size: 13px;
+  font-style: italic;
 }
 
 /* Dark mode for dropdown */
@@ -641,16 +650,23 @@ body.dark-mode .ai-dropdown-merged .ai-dropdown-toggle:hover {
 }
 
 /* Dark mode for reprompt input */
+body.dark-mode .ai-reprompt-input-container {
+  border-top-color: #444;
+}
+
 body.dark-mode .ai-reprompt-input {
-  background: #1a1a1a;
-  border-color: #444;
+  background: transparent;
+  border-bottom-color: #444;
   color: #e4e4e4;
 }
 
+body.dark-mode .ai-reprompt-input:hover {
+  border-bottom-color: #555;
+}
+
 body.dark-mode .ai-reprompt-input:focus {
-  border-color: #666;
-  background: #2a2a2a;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+  border-bottom-color: #e4e4e4;
+  background: transparent;
 }
 
 body.dark-mode .ai-reprompt-input::placeholder {

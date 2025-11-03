@@ -439,7 +439,7 @@
     }
 
     .history-item {
-      padding: 14px;
+      padding: 0;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       margin-bottom: 10px;
@@ -447,6 +447,7 @@
       font-size: 13px;
       transition: all 0.2s ease;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
     }
 
     .history-item:hover {
@@ -459,12 +460,29 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      padding: 12px 14px;
+      background: #fafafa;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .history-header-left {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .history-command-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .history-command {
       font-weight: 600;
       color: #37352f;
+      font-size: 13px;
+      display: block;
+      margin-bottom: 2px;
     }
 
     .history-time {
@@ -472,22 +490,76 @@
       color: #9b9a97;
     }
 
+    .history-content {
+      padding: 12px 14px;
+    }
+
     .history-text {
-      margin: 4px 0;
+      margin: 0 0 10px 0;
       color: #787774;
-      line-height: 1.4;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .history-text:last-child {
+      margin-bottom: 0;
     }
 
     .history-text strong {
       color: #37352f;
-      display: block;
-      margin-top: 8px;
+      display: inline;
+      margin-right: 4px;
+      font-size: 12px;
+    }
+
+    .history-text-content {
+      color: #37352f;
+      word-break: break-word;
+    }
+
+    .history-metadata {
+      font-size: 11px;
+      color: #9b9a97;
+      padding: 8px 14px;
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .history-metadata-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .history-metadata-label {
+      font-weight: 500;
+      color: #787774;
     }
 
     .history-actions {
       display: flex;
-      gap: 8px;
-      margin-top: 8px;
+      gap: 6px;
+      padding: 10px 14px;
+      border-top: 1px solid #f0f0f0;
+      background: white;
+    }
+
+    .history-group-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9b9a97;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 16px 0 8px 0;
+      padding: 0 4px;
+    }
+
+    .history-group-header:first-child {
+      margin-top: 0;
     }
 
     .btn-small {
@@ -720,6 +792,11 @@
       border-color: #444;
     }
 
+    body.dark-mode .history-header {
+      background: #1a1a1a;
+      border-bottom-color: #333;
+    }
+
     body.dark-mode .history-command {
       color: #e4e4e4;
     }
@@ -730,6 +807,28 @@
 
     body.dark-mode .history-text strong {
       color: #e4e4e4;
+    }
+
+    body.dark-mode .history-text-content {
+      color: #e4e4e4;
+    }
+
+    body.dark-mode .history-metadata {
+      background: #1a1a1a;
+      border-top-color: #333;
+    }
+
+    body.dark-mode .history-metadata-label {
+      color: #9b9b9b;
+    }
+
+    body.dark-mode .history-actions {
+      border-top-color: #333;
+      background: #2a2a2a;
+    }
+
+    body.dark-mode .history-group-header {
+      color: #666;
     }
 
     body.dark-mode .theme-toggle {
@@ -862,10 +961,20 @@
 
   <!-- History Tab -->
   <div class="tab-content" id="history-tab">
-    <div class="section">
+    <div class="section" style="padding-bottom: 0;">
       <div class="section-title">
         <span>History</span>
         <button type="button" id="clear-history" class="btn-small" style="margin-left: auto;">Clear All</button>
+      </div>
+
+      <div class="history-search-container">
+        <input
+          type="text"
+          id="history-search"
+          class="input-field"
+          placeholder="Search history..."
+          style="margin-bottom: 16px;"
+        >
       </div>
 
       <div id="history-list" class="history-list">

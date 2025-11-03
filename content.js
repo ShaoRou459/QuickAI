@@ -1559,12 +1559,15 @@ function showRepromptDialog(command, selectionInfo, currentResult) {
         type="text"
         id="ai-reprompt-input"
         class="ai-reprompt-input"
-        placeholder="Tell AI what to change..."
+        placeholder="e.g., Make it more formal, Fix grammar, Shorten..."
       />
     </div>
-    <div class="ai-popup-actions">
-      <button class="ai-btn ai-btn-secondary" data-action="cancel">Cancel</button>
-      <button class="ai-btn ai-btn-primary" data-action="submit">Submit</button>
+    <div class="ai-popup-bottom">
+      <div class="ai-popup-actions">
+        <button class="ai-btn ai-btn-secondary" data-action="cancel">Cancel</button>
+        <button class="ai-btn ai-btn-primary" data-action="submit">Submit</button>
+      </div>
+      <div class="ai-popup-footer">QuickAI</div>
     </div>
   `;
 

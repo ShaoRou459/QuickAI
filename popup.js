@@ -293,24 +293,109 @@ async function loadHistory() {
       return;
     }
 
-    historyList.innerHTML = history.map(entry => {
-      const date = new Date(entry.timestamp);
-      const timeStr = date.toLocaleString();
+    // Helper function to get relative time
+    function getRelativeTime(timestamp) {
+      const now = new Date();
+      const date = new Date(timestamp);
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return date.toLocaleDateString();
+    }
+
+    // Helper function to group entries by date
+    function groupByDate(entries) {
+      const groups = {
+        today: [],
+        yesterday: [],
+        thisWeek: [],
+        older: []
+      };
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+
+      entries.forEach(entry => {
+        const entryDate = new Date(entry.timestamp);
+        const entryDay = new Date(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate());
+
+        if (entryDay.getTime() === today.getTime()) {
+          groups.today.push(entry);
+        } else if (entryDay.getTime() === yesterday.getTime()) {
+          groups.yesterday.push(entry);
+        } else if (entryDate >= weekAgo) {
+          groups.thisWeek.push(entry);
+        } else {
+          groups.older.push(entry);
+        }
+      });
+
+      return groups;
+    }
+
+    const groups = groupByDate(history);
+    let html = '';
+
+    // Render groups
+    if (groups.today.length > 0) {
+      html += '<div class="history-group-header">Today</div>';
+      html += groups.today.map(entry => renderHistoryItem(entry)).join('');
+    }
+    if (groups.yesterday.length > 0) {
+      html += '<div class="history-group-header">Yesterday</div>';
+      html += groups.yesterday.map(entry => renderHistoryItem(entry)).join('');
+    }
+    if (groups.thisWeek.length > 0) {
+      html += '<div class="history-group-header">This Week</div>';
+      html += groups.thisWeek.map(entry => renderHistoryItem(entry)).join('');
+    }
+    if (groups.older.length > 0) {
+      html += '<div class="history-group-header">Older</div>';
+      html += groups.older.map(entry => renderHistoryItem(entry)).join('');
+    }
+
+    function renderHistoryItem(entry) {
+      const timeStr = getRelativeTime(entry.timestamp);
 
       return `
-        <div class="history-item">
+        <div class="history-item" data-search="${escapeHtml(entry.input + ' ' + entry.output + ' ' + entry.commandTitle).toLowerCase()}">
           <div class="history-header">
-            <span class="history-command">${entry.commandTitle}</span>
-            <span class="history-time">${timeStr}</span>
+            <div class="history-header-left">
+              <div class="history-command-info">
+                <span class="history-command">${entry.commandTitle}</span>
+                <span class="history-time">${timeStr}</span>
+              </div>
+            </div>
           </div>
-          <div class="history-text">
-            <strong>Input:</strong> ${escapeHtml(truncate(entry.input, 100))}
+          <div class="history-content">
+            <div class="history-text">
+              <strong>Input:</strong>
+              <span class="history-text-content">${escapeHtml(truncate(entry.input, 150))}</span>
+            </div>
+            <div class="history-text">
+              <strong>Output:</strong>
+              <span class="history-text-content">${escapeHtml(truncate(entry.output, 150))}</span>
+            </div>
           </div>
-          <div class="history-text">
-            <strong>Output:</strong> ${escapeHtml(truncate(entry.output, 100))}
-          </div>
-          <div class="history-text" style="font-size: 11px; color: #9b9a97;">
-            Page: ${escapeHtml(entry.pageTitle)} • Model: ${entry.model}
+          <div class="history-metadata">
+            <div class="history-metadata-item">
+              <span class="history-metadata-label">Page:</span>
+              <span>${escapeHtml(truncate(entry.pageTitle, 30))}</span>
+            </div>
+            <div class="history-metadata-item">
+              <span class="history-metadata-label">Model:</span>
+              <span>${entry.model}</span>
+            </div>
           </div>
           <div class="history-actions">
             <button class="btn-small copy-history" data-text="${escapeHtml(entry.output)}">Copy Output</button>
@@ -318,7 +403,9 @@ async function loadHistory() {
           </div>
         </div>
       `;
-    }).join('');
+    }
+
+    historyList.innerHTML = html;
 
     // Add event listeners for buttons
     historyList.querySelectorAll('.copy-history').forEach(btn => {
@@ -345,6 +432,49 @@ document.getElementById('clear-history').addEventListener('click', async () => {
     await browser.runtime.sendMessage({ type: 'clear-history' });
     loadHistory();
   }
+});
+
+// Search history
+document.getElementById('history-search').addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase().trim();
+  const historyItems = document.querySelectorAll('.history-item');
+  const groupHeaders = document.querySelectorAll('.history-group-header');
+
+  if (!searchTerm) {
+    // Show all items and headers
+    historyItems.forEach(item => item.style.display = '');
+    groupHeaders.forEach(header => header.style.display = '');
+    return;
+  }
+
+  // Filter items
+  let visibleGroups = new Set();
+  historyItems.forEach(item => {
+    const searchData = item.getAttribute('data-search') || '';
+    if (searchData.includes(searchTerm)) {
+      item.style.display = '';
+      // Find which group this item belongs to
+      let prevElement = item.previousElementSibling;
+      while (prevElement) {
+        if (prevElement.classList.contains('history-group-header')) {
+          visibleGroups.add(prevElement.textContent);
+          break;
+        }
+        prevElement = prevElement.previousElementSibling;
+      }
+    } else {
+      item.style.display = 'none';
+    }
+  });
+
+  // Show/hide group headers based on whether they have visible items
+  groupHeaders.forEach(header => {
+    if (visibleGroups.has(header.textContent)) {
+      header.style.display = '';
+    } else {
+      header.style.display = 'none';
+    }
+  });
 });
 
 // Advanced settings
