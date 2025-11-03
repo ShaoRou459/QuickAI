@@ -52,6 +52,10 @@
       border-bottom: 1px solid #f0f0f0;
     }
 
+    .section.collapsed-section {
+      padding-bottom: 12px;
+    }
+
     .section:last-child {
       border-bottom: none;
     }
@@ -60,7 +64,7 @@
       font-size: 13px;
       font-weight: 600;
       color: #37352f;
-      margin: 0 0 16px 0;
+      margin: 0 0 12px 0;
       padding: 0;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -72,8 +76,8 @@
     .section-title.collapsible {
       cursor: pointer;
       user-select: none;
-      padding: 12px 14px;
-      margin: -8px -8px 16px -8px;
+      padding: 10px 12px;
+      margin: -8px -8px 8px -8px;
       border-radius: 6px;
       transition: all 0.2s ease;
     }
@@ -103,31 +107,14 @@
     .section-content.collapsed {
       max-height: 0;
       opacity: 0;
+      margin-bottom: -8px;
     }
 
-    .theme-toggle {
-      background: white;
-      border: 1px solid #e0e0e0;
-      cursor: pointer;
-      padding: 6px 12px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-      font-size: 12px;
-      font-weight: 500;
-      color: #37352f;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    .section.collapsed-section .help-text {
+      display: none;
     }
 
-    .theme-toggle:hover {
-      background: #f7f6f3;
-      border-color: #37352f;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-      transform: translateY(-1px);
-    }
 
-    .theme-toggle:active {
-      transform: translateY(0);
-    }
 
     .form-group {
       margin-bottom: 16px;
@@ -367,6 +354,13 @@
       background: #fafafa;
       border-bottom: 1px solid #e0e0e0;
       padding: 0 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 0;
     }
 
     .tab {
@@ -391,6 +385,28 @@
       color: #37352f;
       border-bottom-color: #37352f;
       background: white;
+    }
+
+    .tab-group .tab:first-child {
+      margin-left: 0;
+    }
+
+    .tabs .theme-toggle {
+      margin-left: auto;
+      background: transparent;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 4px;
+    }
+
+    .tabs .theme-toggle:hover {
+      background: rgba(55, 53, 47, 0.1);
+    }
+
+    .tabs .theme-toggle:active {
+      transform: scale(0.95);
     }
 
     .tab-content {
@@ -729,6 +745,10 @@
       border-bottom-color: #333;
     }
 
+    body.dark-mode .tabs .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     body.dark-mode .tab {
       color: #9b9b9b;
     }
@@ -831,16 +851,7 @@
       color: #666;
     }
 
-    body.dark-mode .theme-toggle {
-      background: #2a2a2a;
-      border-color: #444;
-      color: #e4e4e4;
-    }
 
-    body.dark-mode .theme-toggle:hover {
-      background: #333;
-      border-color: #666;
-    }
 
     body.dark-mode .btn-small {
       background: #2a2a2a;
@@ -888,9 +899,22 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" data-tab="settings">AI</button>
-    <button class="tab" data-tab="history">History</button>
-    <button class="tab" data-tab="advanced">Advanced</button>
+    <div class="tab-group">
+      <button class="tab active" data-tab="settings">AI</button>
+      <button class="tab" data-tab="history">History</button>
+      <button class="tab" data-tab="advanced">Advanced</button>
+    </div>
+    <button type="button" id="theme-toggle" class="theme-toggle" title="Toggle dark mode">
+      <span class="theme-icon">
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+        </svg>
+      </span>
+    </button>
   </div>
 
   <!-- Settings Tab -->
@@ -898,12 +922,9 @@
   <div class="section">
     <div class="section-title">
       <span>API Settings</span>
-      <button type="button" id="theme-toggle" class="theme-toggle" title="Toggle dark mode">
-        <span class="theme-icon">Dark</span>
-      </button>
     </div>
 
-    <form id="settings-form">
+    <div id="settings-form">
       <div class="form-group">
         <label for="provider">AI Provider</label>
         <select id="provider" name="provider" class="input-field">
@@ -951,9 +972,9 @@
         <p class="help-text">Enter the model name manually (e.g., gpt-4, claude-3-5-sonnet-20241022)</p>
       </div>
 
-      <button type="submit" class="btn btn-primary">Save Settings</button>
-      <button type="button" id="test-connection" class="btn btn-secondary">Test Connection</button>
-    </form>
+      <button type="button" id="test-connection" class="btn btn-primary">Test Connection</button>
+      <p class="help-text" style="margin-top: 8px; color: #28a745;">✓ Settings save automatically</p>
+    </div>
 
     <div id="status-message" class="status-message"></div>
   </div>
@@ -1098,7 +1119,7 @@
           <textarea id="prompt-explain" class="input-field" placeholder="Loading..."></textarea>
         </div>
 
-        <button type="button" id="save-advanced" class="btn btn-primary">Save Advanced Settings</button>
+        <p class="help-text" style="margin-top: 12px; color: #28a745;">✓ Advanced settings save automatically</p>
         <div id="advanced-status" class="status-message"></div>
       </div>
     </div>

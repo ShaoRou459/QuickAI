@@ -13,10 +13,12 @@ async function loadTheme() {
 
     if (isDark) {
       document.body.classList.add('dark-mode');
-      themeToggle.querySelector('.theme-icon').textContent = '☀️';
+      themeToggle.querySelector('.icon-sun').style.display = 'block';
+      themeToggle.querySelector('.icon-moon').style.display = 'none';
     } else {
       document.body.classList.remove('dark-mode');
-      themeToggle.querySelector('.theme-icon').textContent = '🌙';
+      themeToggle.querySelector('.icon-sun').style.display = 'none';
+      themeToggle.querySelector('.icon-moon').style.display = 'block';
     }
   } catch (error) {
     console.error('Error loading theme:', error);
@@ -27,7 +29,8 @@ async function toggleTheme() {
   const isDark = document.body.classList.toggle('dark-mode');
   const theme = isDark ? 'dark' : 'light';
 
-  themeToggle.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
+  themeToggle.querySelector('.icon-sun').style.display = isDark ? 'block' : 'none';
+  themeToggle.querySelector('.icon-moon').style.display = isDark ? 'none' : 'block';
 
   try {
     await browser.storage.sync.set({ theme });

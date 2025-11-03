@@ -17,10 +17,12 @@ async function loadTheme() {
 
     if (isDark) {
       document.body.classList.add('dark-mode');
-      themeToggle.querySelector('.theme-icon').textContent = 'Light';
+      themeToggle.querySelector('.icon-sun').style.display = 'block';
+      themeToggle.querySelector('.icon-moon').style.display = 'none';
     } else {
       document.body.classList.remove('dark-mode');
-      themeToggle.querySelector('.theme-icon').textContent = 'Dark';
+      themeToggle.querySelector('.icon-sun').style.display = 'none';
+      themeToggle.querySelector('.icon-moon').style.display = 'block';
     }
   } catch (error) {
     console.error('Error loading theme:', error);
@@ -31,7 +33,8 @@ async function toggleTheme() {
   const isDark = document.body.classList.toggle('dark-mode');
   const theme = isDark ? 'dark' : 'light';
 
-  themeToggle.querySelector('.theme-icon').textContent = isDark ? 'Light' : 'Dark';
+  themeToggle.querySelector('.icon-sun').style.display = isDark ? 'block' : 'none';
+  themeToggle.querySelector('.icon-moon').style.display = isDark ? 'none' : 'block';
 
   try {
     await browser.storage.sync.set({ theme });
@@ -114,6 +117,7 @@ async function loadSettings() {
 
 // Auto-save on input change (debounced)
 let autoSaveTimeout;
+let autoSaveAdvancedTimeout;
 function autoSave() {
   clearTimeout(autoSaveTimeout);
   autoSaveTimeout = setTimeout(async () => {
@@ -130,8 +134,57 @@ function autoSave() {
     try {
       await browser.storage.sync.set(settings);
       console.log('Settings auto-saved');
+      // Show subtle auto-save indicator
+      const saveBtn = document.querySelector('.btn-primary');
+      if (saveBtn) {
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = 'Auto-saved ✓';
+        saveBtn.style.background = '#28a745';
+        setTimeout(() => {
+          saveBtn.textContent = originalText;
+          saveBtn.style.background = '';
+        }, 1500);
+      }
     } catch (error) {
       console.error('Error auto-saving settings:', error);
+    }
+  }, 500); // Wait 500ms after user stops typing
+}
+
+// Auto-save advanced settings
+function autoSaveAdvanced() {
+  clearTimeout(autoSaveAdvancedTimeout);
+  autoSaveAdvancedTimeout = setTimeout(async () => {
+    try {
+      const customPrompts = {
+        'fix-spelling': document.getElementById('prompt-fix-spelling').value,
+        'continue-writing': document.getElementById('prompt-continue-writing').value,
+        'suggest-rewrites': document.getElementById('prompt-suggest-rewrites').value,
+        'explain': document.getElementById('prompt-explain').value
+      };
+
+      await browser.storage.sync.set({
+        customPrompts,
+        includePageTitle: document.getElementById('include-page-title').checked,
+        includeTextContext: document.getElementById('include-text-context').checked,
+        debugMode: document.getElementById('debug-mode').checked,
+        saveHistory: document.getElementById('save-history').checked,
+        showContextMenu: document.getElementById('show-context-menu').checked,
+        enablePopupWorkflow: document.getElementById('enable-popup-workflow').checked
+      });
+      console.log('Advanced settings auto-saved');
+      // Show subtle auto-save indicator
+      const advancedStatus = document.getElementById('advanced-status');
+      if (advancedStatus) {
+        advancedStatus.textContent = '✓ Auto-saved';
+        advancedStatus.className = 'status-message success';
+        advancedStatus.style.display = 'block';
+        setTimeout(() => {
+          advancedStatus.style.display = 'none';
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error auto-saving advanced settings:', error);
     }
   }, 500); // Wait 500ms after user stops typing
 }
@@ -140,29 +193,9 @@ function autoSave() {
 baseUrlInput.addEventListener('input', autoSave);
 apiKeyInput.addEventListener('input', autoSave);
 modelInput.addEventListener('input', autoSave);
+document.getElementById('provider').addEventListener('change', autoSave);
 
-// Save settings
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
 
-  const formData = new FormData(form);
-  const provider = formData.get('provider');
-  const config = PROVIDER_CONFIG[provider];
-  
-  const settings = {
-    provider: provider,
-    baseUrl: formData.get('baseUrl') || config.defaultBaseUrl,
-    apiKey: formData.get('apiKey'),
-    model: formData.get('model') || config.defaultModel
-  };
-
-  try {
-    await browser.storage.sync.set(settings);
-    showStatus('Settings saved successfully!', 'success');
-  } catch (error) {
-    showStatus('Failed to save settings: ' + error.message, 'error');
-  }
-});
 
 // Test connection
 testButton.addEventListener('click', async () => {
@@ -502,7 +535,8 @@ async function loadAdvancedSettings() {
       'saveHistory',
       'showContextMenu',
       'quickMenuShortcut',
-      'enablePopupWorkflow'
+      'enablePopupWorkflow',
+      'collapsedSections'
     ]);
 
     console.log('Loaded settings:', settings);
@@ -529,10 +563,59 @@ async function loadAdvancedSettings() {
     document.getElementById('prompt-suggest-rewrites').value = customPrompts['suggest-rewrites'] || defaultPrompts['suggest-rewrites'] || '';
     document.getElementById('prompt-explain').value = customPrompts['explain'] || defaultPrompts['explain'] || '';
 
+    // Restore collapsed states
+    const collapsedSections = settings.collapsedSections || {};
+    const collapsibleHeaders = document.querySelectorAll('.section-title.collapsible');
+    collapsibleHeaders.forEach(header => {
+      const sectionId = header.textContent.trim();
+      const content = header.nextElementSibling;
+      const section = header.closest('.section');
+      
+      if (collapsedSections[sectionId]) {
+        header.classList.add('collapsed');
+        content.classList.add('collapsed');
+        section.classList.add('collapsed-section');
+      } else {
+        // Ensure proper initial state
+        header.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+        section.classList.remove('collapsed-section');
+      }
+      
+      // Add click event listener for toggling
+      header.addEventListener('click', () => {
+        const isCollapsed = header.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+          header.classList.remove('collapsed');
+          content.classList.remove('collapsed');
+          section.classList.remove('collapsed-section');
+          saveCollapsedState(header, false);
+        } else {
+          header.classList.add('collapsed');
+          content.classList.add('collapsed');
+          section.classList.add('collapsed-section');
+          saveCollapsedState(header, true);
+        }
+      });
+    });
+
     console.log('Advanced settings loaded successfully');
   } catch (error) {
     console.error('Error loading advanced settings:', error);
   }
+
+  // Add auto-save listeners for advanced settings
+  document.getElementById('save-history').addEventListener('change', autoSaveAdvanced);
+  document.getElementById('show-context-menu').addEventListener('change', autoSaveAdvanced);
+  document.getElementById('enable-popup-workflow').addEventListener('change', autoSaveAdvanced);
+  document.getElementById('include-page-title').addEventListener('change', autoSaveAdvanced);
+  document.getElementById('include-text-context').addEventListener('change', autoSaveAdvanced);
+  document.getElementById('debug-mode').addEventListener('change', autoSaveAdvanced);
+  document.getElementById('prompt-fix-spelling').addEventListener('input', autoSaveAdvanced);
+  document.getElementById('prompt-continue-writing').addEventListener('input', autoSaveAdvanced);
+  document.getElementById('prompt-suggest-rewrites').addEventListener('input', autoSaveAdvanced);
+  document.getElementById('prompt-explain').addEventListener('input', autoSaveAdvanced);
 }
 
 // Format shortcut for display
@@ -608,31 +691,7 @@ document.querySelectorAll('.reset-btn').forEach(btn => {
   });
 });
 
-// Save advanced settings
-document.getElementById('save-advanced').addEventListener('click', async () => {
-  try {
-    const customPrompts = {
-      'fix-spelling': document.getElementById('prompt-fix-spelling').value,
-      'continue-writing': document.getElementById('prompt-continue-writing').value,
-      'suggest-rewrites': document.getElementById('prompt-suggest-rewrites').value,
-      'explain': document.getElementById('prompt-explain').value
-    };
 
-    await browser.storage.sync.set({
-      customPrompts,
-      includePageTitle: document.getElementById('include-page-title').checked,
-      includeTextContext: document.getElementById('include-text-context').checked,
-      debugMode: document.getElementById('debug-mode').checked,
-      saveHistory: document.getElementById('save-history').checked,
-      showContextMenu: document.getElementById('show-context-menu').checked,
-      enablePopupWorkflow: document.getElementById('enable-popup-workflow').checked
-    });
-
-    showAdvancedStatus('Advanced settings saved successfully!', 'success');
-  } catch (error) {
-    showAdvancedStatus('Failed to save: ' + error.message, 'error');
-  }
-});
 
 function showAdvancedStatus(message, type) {
   const statusEl = document.getElementById('advanced-status');
@@ -666,14 +725,17 @@ document.addEventListener('DOMContentLoaded', () => {
   collapsibleHeaders.forEach(header => {
     header.addEventListener('click', () => {
       const content = header.nextElementSibling;
+      const section = header.closest('.section');
       const isCollapsed = header.classList.contains('collapsed');
       
       if (isCollapsed) {
         header.classList.remove('collapsed');
         content.classList.remove('collapsed');
+        section.classList.remove('collapsed-section');
       } else {
         header.classList.add('collapsed');
         content.classList.add('collapsed');
+        section.classList.add('collapsed-section');
       }
     });
   });
@@ -760,6 +822,13 @@ function showCommandInterface(selectedText, tabId) {
         <div class="command-text">
           <div class="command-label">Explain</div>
           <div class="command-desc">Get explanation</div>
+        </div>
+      </button>
+      <button class="command-btn" data-command="custom">
+        <span class="command-icon">✎</span>
+        <div class="command-text">
+          <div class="command-label">Custom</div>
+          <div class="command-desc">Add custom instruction</div>
         </div>
       </button>
     </div>
@@ -870,6 +939,12 @@ function showCommandInterface(selectedText, tabId) {
     btn.addEventListener('click', async () => {
       const command = btn.dataset.command;
 
+      // Handle custom command specially - show input modal
+      if (command === 'custom') {
+        showCustomInstructionModal(selectedText, tabId);
+        return;
+      }
+
       // Send message to background to process
       try {
         await browser.runtime.sendMessage({
@@ -893,6 +968,178 @@ function showCommandInterface(selectedText, tabId) {
     window.location.reload();
   });
 }
+
+// Show custom instruction modal
+function showCustomInstructionModal(selectedText, tabId) {
+  // Create modal overlay
+  const modal = document.createElement('div');
+  modal.id = 'custom-instruction-modal';
+  modal.innerHTML = `
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <h3>Custom Instruction</h3>
+      <p class="modal-subtitle">Enter your custom instruction for the AI</p>
+      <textarea
+        id="custom-instruction-input"
+        class="input-field"
+        placeholder="e.g., Translate to Spanish, Summarize in 3 bullet points..."
+        rows="4"
+        autofocus
+      ></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancel-custom">Cancel</button>
+        <button class="btn btn-primary" id="submit-custom">Submit</button>
+      </div>
+    </div>
+  `;
+
+  // Add styles for modal
+  const style = document.createElement('style');
+  style.textContent = `
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-content {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 1001;
+      width: 380px;
+      max-width: 90%;
+      animation: slideUp 0.2s ease;
+    }
+    .modal-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: #37352f;
+    }
+    .modal-subtitle {
+      font-size: 13px;
+      color: #787774;
+      margin: 0 0 16px 0;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .modal-actions .btn {
+      flex: 1;
+      margin: 0;
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -45%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+    body.dark-mode .modal-content {
+      background: #2a2a2a;
+      border: 1px solid #444;
+    }
+    body.dark-mode .modal-content h3 {
+      color: #e4e4e4;
+    }
+    body.dark-mode .modal-subtitle {
+      color: #9b9b9b;
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(modal);
+
+  // Focus on textarea
+  setTimeout(() => {
+    document.getElementById('custom-instruction-input').focus();
+  }, 100);
+
+  // Handle cancel
+  const handleCancel = () => {
+    modal.remove();
+    style.remove();
+  };
+
+  document.getElementById('cancel-custom').addEventListener('click', handleCancel);
+  document.querySelector('.modal-overlay').addEventListener('click', handleCancel);
+
+  // Handle submit
+  const handleSubmit = async () => {
+    const customInstruction = document.getElementById('custom-instruction-input').value.trim();
+
+    if (!customInstruction) {
+      alert('Please enter a custom instruction');
+      return;
+    }
+
+    modal.remove();
+    style.remove();
+
+    // Send message to background to process
+    try {
+      await browser.runtime.sendMessage({
+        type: 'execute-command',
+        command: 'custom',
+        selectedText: selectedText,
+        tabId: tabId,
+        customInstructions: customInstruction
+      });
+
+      // Close popup after executing
+      window.close();
+    } catch (e) {
+      console.error('Error executing custom command:', e);
+      alert('Error: ' + e.message);
+    }
+  };
+
+  document.getElementById('submit-custom').addEventListener('click', handleSubmit);
+
+  // Handle Enter key to submit
+  document.getElementById('custom-instruction-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      handleSubmit();
+    } else if (e.key === 'Escape') {
+      handleCancel();
+    }
+  });
+}
+
+// Save collapsed state function
+async function saveCollapsedState(header, isCollapsed) {
+  try {
+    const sectionId = header.textContent.trim();
+    const settings = await browser.storage.sync.get('collapsedSections');
+    const collapsedSections = settings.collapsedSections || {};
+
+    if (isCollapsed) {
+      collapsedSections[sectionId] = true;
+    } else {
+      delete collapsedSections[sectionId];
+    }
+
+    await browser.storage.sync.set({ collapsedSections });
+  } catch (error) {
+    console.error('Error saving collapsed state:', error);
+  }
+}
+
+
 
 // Load settings and theme on page load
 initializePopup();

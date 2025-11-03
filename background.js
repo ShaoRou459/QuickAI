@@ -5,7 +5,8 @@ const AI_COMMANDS = [
   { id: 'fix-spelling', title: 'Improve Writing' },
   { id: 'continue-writing', title: 'Continue Writing' },
   { id: 'suggest-rewrites', title: 'Suggest Rewrites' },
-  { id: 'explain', title: 'Explain' }
+  { id: 'explain', title: 'Explain' },
+  { id: 'custom', title: 'Custom' }
 ];
 
 // AI Provider configurations
@@ -65,7 +66,8 @@ const DEFAULT_PROMPTS = {
   'fix-spelling': 'Fix any spelling and grammar errors in the following text. Return only the corrected text without explanations:\n\n{text}',
   'continue-writing': 'Continue writing the following text in the same style and tone. Write 2-3 sentences:\n\n{text}',
   'suggest-rewrites': 'Suggest 3 alternative ways to rewrite the following text. Return each rewrite on a new line, numbered 1-3:\n\n{text}',
-  'explain': 'Explain the following text in simple, clear terms. Write in paragraph form without using bullet points or numbered lists. Use bold for emphasis if helpful. For math, use LaTeX notation with $ for inline and $$ for display math. Do not add any preamble like "Here\'s an explanation" - just provide the explanation directly:\n\n{text}'
+  'explain': 'Explain the following text in simple, clear terms. Write in paragraph form without using bullet points or numbered lists. Use bold for emphasis if helpful. For math, use LaTeX notation with $ for inline and $$ for display math. Do not add any preamble like "Here\'s an explanation" - just provide the explanation directly:\n\n{text}',
+  'custom': '{instructions}\n\n{text}'
 };
 
 // Parse API errors with actionable messages
@@ -296,7 +298,7 @@ async function sendMessageToTab(tabId, message, retries = 3) {
 }
 
 // Handle AI command execution
-async function handleAICommand(commandId, selectedText, tabId, contextInfo = {}) {
+async function handleAICommand(commandId, selectedText, tabId, contextInfo = {}, customInstructions = null) {
   console.log('AI Text Assistant: Handling command:', commandId, 'for tab:', tabId);
 
   try {
@@ -329,7 +331,7 @@ async function handleAICommand(commandId, selectedText, tabId, contextInfo = {})
 
     // Make API call
     console.log('AI Text Assistant: Calling API...');
-    const result = await callAIAPI(commandId, selectedText, settings, contextInfo);
+    const result = await callAIAPI(commandId, selectedText, settings, contextInfo, customInstructions);
     console.log('AI Text Assistant: API call successful, result length:', result.length);
 
     // Send result to content script
@@ -353,10 +355,10 @@ async function handleAICommand(commandId, selectedText, tabId, contextInfo = {})
 }
 
 // Call AI API with provider support
-async function callAIAPI(commandId, text, settings, contextInfo = {}) {
+async function callAIAPI(commandId, text, settings, contextInfo = {}, customInstructions = null) {
   const provider = settings.provider || 'openai';
   const providerConfig = AI_PROVIDERS[provider];
-  
+
   if (!providerConfig) {
     throw new Error(`Unknown AI provider: ${provider}`);
   }
@@ -399,7 +401,12 @@ async function callAIAPI(commandId, text, settings, contextInfo = {}) {
   // Use custom prompts if available, otherwise use defaults
   const promptTemplate = customPrompts[commandId] || DEFAULT_PROMPTS[commandId];
   const promptWithContext = `${contextPrefix}${promptTemplate}`;
-  const finalPrompt = promptWithContext.replace('{text}', text);
+  let finalPrompt = promptWithContext.replace('{text}', text);
+
+  // For custom command, replace the {instructions} placeholder
+  if (commandId === 'custom' && customInstructions) {
+    finalPrompt = finalPrompt.replace('{instructions}', customInstructions);
+  }
 
   if (debugMode) {
     console.log('AI Text Assistant: [DEBUG] Full prompt for command', commandId, ':\n', finalPrompt);
@@ -678,11 +685,11 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (tabId) {
       // Get context from the tab
       browser.tabs.sendMessage(tabId, { type: 'get-context' }).then(contextInfo => {
-        handleAICommand(message.command, message.selectedText, tabId, contextInfo || {});
+        handleAICommand(message.command, message.selectedText, tabId, contextInfo || {}, message.customInstructions);
       }).catch(error => {
         console.error('AI Text Assistant: Error getting context:', error);
         // Execute anyway with minimal context
-        handleAICommand(message.command, message.selectedText, tabId, {});
+        handleAICommand(message.command, message.selectedText, tabId, {}, message.customInstructions);
       });
     }
     return false;

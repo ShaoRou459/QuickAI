@@ -30,27 +30,21 @@ header {
 }
 
 .theme-toggle {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 8px;
+  border-radius: 4px;
   transition: all 0.2s ease;
-  font-size: 12px;
-  font-weight: 500;
-  color: #37352f;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .theme-toggle:hover {
-  background: #f7f6f3;
-  border-color: #37352f;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
+  background: rgba(55, 53, 47, 0.1);
+  transform: none;
 }
 
 .theme-toggle:active {
-  transform: translateY(0);
+  transform: scale(0.95);
 }
 
 h1 {
@@ -276,17 +270,8 @@ body.dark-mode .btn-secondary:hover {
   background: #333;
 }
 
-body.dark-mode .theme-toggle {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #e4e4e4;
-}
-
 body.dark-mode .theme-toggle:hover {
-  background: #333;
-  border-color: #666;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 body.dark-mode .status-message.success {
