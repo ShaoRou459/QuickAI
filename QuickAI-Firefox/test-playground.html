@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickAI Extension Test Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: #f7f6f3;
+            color: #37352f;
+            line-height: 1.6;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #e4e4e4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode header {
+            background: #2a2a2a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 36px;
+        }
+
+        .subtitle {
+            color: #787774;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .subtitle {
+            color: #9b9b9b;
+        }
+
+        .instructions {
+            background: #f0f0f0;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #37352f;
+            margin-top: 16px;
+        }
+
+        body.dark-mode .instructions {
+            background: #1a1a1a;
+            border-left-color: #e4e4e4;
+        }
+
+        .instructions h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .instructions ul {
+            list-style-position: inside;
+            font-size: 14px;
+        }
+
+        .instructions li {
+            margin: 4px 0;
+        }
+
+        .instructions code {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+        }
+
+        body.dark-mode .instructions code {
+            background: #2a2a2a;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .toggle-dark-mode {
+            background: #37352f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .toggle-dark-mode:hover {
+            background: #2c2a26;
+        }
+
+        body.dark-mode .toggle-dark-mode {
+            background: #e4e4e4;
+            color: #1a1a1a;
+        }
+
+        body.dark-mode .toggle-dark-mode:hover {
+            background: #f0f0f0;
+        }
+
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode .test-section {
+            background: #2a2a2a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-section h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-section .icon {
+            font-size: 28px;
+        }
+
+        .test-section p {
+            color: #787774;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        body.dark-mode .test-section p {
+            color: #9b9b9b;
+        }
+
+        .test-area {
+            background: #f7f6f3;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body.dark-mode .test-area {
+            background: #1a1a1a;
+            border-color: #444;
+        }
+
+        .test-area h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #37352f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-mode .test-area h3 {
+            color: #e4e4e4;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            background: white;
+            color: #37352f;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode textarea,
+        body.dark-mode input[type="text"] {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e4e4e4;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #37352f;
+            box-shadow: 0 0 0 2px rgba(55, 53, 47, 0.1);
+        }
+
+        body.dark-mode textarea:focus,
+        body.dark-mode input[type="text"]:focus {
+            border-color: #666;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .contenteditable {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            background: white;
+            color: #37352f;
+            min-height: 80px;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode .contenteditable {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e4e4e4;
+        }
+
+        .contenteditable:focus {
+            outline: none;
+            border-color: #37352f;
+            box-shadow: 0 0 0 2px rgba(55, 53, 47, 0.1);
+        }
+
+        body.dark-mode .contenteditable:focus {
+            border-color: #666;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .selectable-text {
+            background: #f0f0f0;
+            padding: 16px;
+            border-radius: 6px;
+            line-height: 1.8;
+            user-select: text;
+            cursor: text;
+        }
+
+        body.dark-mode .selectable-text {
+            background: #1a1a1a;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #37352f;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        body.dark-mode .badge {
+            background: #e4e4e4;
+            color: #1a1a1a;
+        }
+
+        .tip {
+            background: #fff9e6;
+            border-left: 4px solid #f5c518;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        body.dark-mode .tip {
+            background: #2a2612;
+            border-left-color: #f5c518;
+        }
+
+        .keyboard-hint {
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 0 2px;
+        }
+
+        body.dark-mode .keyboard-hint {
+            background: #444;
+            color: #e4e4e4;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #787774;
+            font-size: 14px;
+        }
+
+        body.dark-mode footer {
+            color: #666;
+        }
+
+        .command-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .command-card {
+            background: #f0f0f0;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        body.dark-mode .command-card {
+            background: #1a1a1a;
+            border-color: #444;
+        }
+
+        .command-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .command-card p {
+            font-size: 13px;
+            color: #787774;
+            margin: 0;
+        }
+
+        body.dark-mode .command-card p {
+            color: #9b9b9b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="logo">⚡</span> QuickAI Test Playground</h1>
+            <p class="subtitle">Test all features of the QuickAI Firefox extension in one place</p>
+
+            <div class="instructions">
+                <h3>📋 How to Use This Playground</h3>
+                <ul>
+                    <li><strong>Right-Click Method:</strong> Select any text below, right-click, and choose QuickAI from the context menu</li>
+                    <li><strong>Keyboard Shortcut:</strong> Select text and press <code>Ctrl+Shift+Space</code> (or <code>Cmd+Shift+Space</code> on Mac)</li>
+                    <li><strong>Test Different Elements:</strong> Try the extension on textareas, input fields, contenteditable divs, and regular text</li>
+                    <li><strong>Dark Mode:</strong> Toggle dark mode below to test the extension's dark theme support</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <button class="toggle-dark-mode" onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+            </div>
+        </header>
+
+        <!-- Available Commands Overview -->
+        <div class="test-section">
+            <h2><span class="icon">🎯</span> Available AI Commands</h2>
+            <p>The extension provides four main commands to assist with text editing and understanding:</p>
+
+            <div class="command-list">
+                <div class="command-card">
+                    <h4>✓ Improve Writing</h4>
+                    <p>Fix spelling and grammar errors in your selected text</p>
+                </div>
+                <div class="command-card">
+                    <h4>→ Continue Writing</h4>
+                    <p>AI continues your text in the same style and tone</p>
+                </div>
+                <div class="command-card">
+                    <h4>⟳ Suggest Rewrites</h4>
+                    <p>Get alternative ways to rewrite your text</p>
+                </div>
+                <div class="command-card">
+                    <h4>? Explain</h4>
+                    <p>Get clear explanations with markdown and LaTeX support</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test: Improve Writing -->
+        <div class="test-section">
+            <h2><span class="icon">✓</span> Test: Improve Writing</h2>
+            <p>Select text with spelling/grammar errors and use the "Improve Writing" command</p>
+
+            <div class="feature-grid">
+                <div class="test-area">
+                    <span class="badge">Textarea</span>
+                    <h3>Editable Textarea</h3>
+                    <textarea>This sentance has severel speling errors and grammer mistakes that need to be fixd. The AI should corect them automaticaly when you use the improve writing feture.</textarea>
+                </div>
+
+                <div class="test-area">
+                    <span class="badge">Input Field</span>
+                    <h3>Text Input</h3>
+                    <input type="text" value="I beleive thier are many problmes with this sentance structure and speling.">
+                </div>
+            </div>
+
+            <div class="test-area">
+                <span class="badge">ContentEditable</span>
+                <h3>ContentEditable Div</h3>
+                <div class="contenteditable" contenteditable="true">The companys revinue has growed significantly this quater, and we are planing to expend our team dramaticaly.</div>
+            </div>
+
+            <div class="tip">
+                💡 <strong>Tip:</strong> After the AI fixes the text, you'll see a popup with "Accept" and "Copy" buttons. For spelling corrections, you can also click "Show Changes" to see a detailed diff view.
+            </div>
+        </div>
+
+        <!-- Test: Continue Writing -->
+        <div class="test-section">
+            <h2><span class="icon">→</span> Test: Continue Writing</h2>
+            <p>Select incomplete text and let the AI continue it in the same style</p>
+
+            <div class="feature-grid">
+                <div class="test-area">
+                    <span class="badge">Textarea</span>
+                    <h3>Story Beginning</h3>
+                    <textarea>The old lighthouse stood alone on the rocky cliff, its beam cutting through the fog like a knife. For decades, it had guided ships safely to shore, but tonight something was different. The keeper noticed a strange light in the distance</textarea>
+                </div>
+
+                <div class="test-area">
+                    <span class="badge">ContentEditable</span>
+                    <h3>Technical Writing</h3>
+                    <div class="contenteditable" contenteditable="true">Machine learning models require careful tuning of hyperparameters to achieve optimal performance. The most important parameters to consider are</div>
+                </div>
+            </div>
+
+            <div class="tip">
+                💡 <strong>Tip:</strong> The "Continue Writing" command will insert text after your selection rather than replacing it. This is perfect for completing sentences or paragraphs.
+            </div>
+        </div>
+
+        <!-- Test: Suggest Rewrites -->
+        <div class="test-section">
+            <h2><span class="icon">⟳</span> Test: Suggest Rewrites</h2>
+            <p>Get alternative ways to express the same idea</p>
+
+            <div class="feature-grid">
+                <div class="test-area">
+                    <span class="badge">Textarea</span>
+                    <h3>Business Communication</h3>
+                    <textarea>I am writing to inform you that the meeting scheduled for tomorrow has been postponed due to unforeseen circumstances.</textarea>
+                </div>
+
+                <div class="test-area">
+                    <span class="badge">Input Field</span>
+                    <h3>Email Subject</h3>
+                    <input type="text" value="Important update regarding project timeline changes">
+                </div>
+            </div>
+
+            <div class="test-area">
+                <span class="badge">Selectable Text</span>
+                <h3>Marketing Copy</h3>
+                <div class="selectable-text">
+                    Our revolutionary new product offers exceptional value and outstanding performance at an affordable price point.
+                </div>
+            </div>
+
+            <div class="tip">
+                💡 <strong>Tip:</strong> The AI will provide 3 different rewrite suggestions as clickable buttons. Simply click on the option you like to instantly replace your selected text. You can also use "Copy All" to copy all suggestions or "Regenerate" for new options!
+            </div>
+        </div>
+
+        <!-- Test: Explain -->
+        <div class="test-section">
+            <h2><span class="icon">?</span> Test: Explain</h2>
+            <p>Get clear explanations with markdown formatting and LaTeX math support</p>
+
+            <div class="test-area">
+                <span class="badge">Complex Concept</span>
+                <h3>Technical Explanation</h3>
+                <div class="selectable-text">
+                    Quantum entanglement is a physical phenomenon that occurs when a group of particles interact such that the quantum state of each particle cannot be described independently of the state of the others.
+                </div>
+            </div>
+
+            <div class="test-area">
+                <span class="badge">Math Expression</span>
+                <h3>Mathematical Formula (LaTeX Support)</h3>
+                <div class="selectable-text">
+                    The quadratic formula is: x = (-b ± √(b² - 4ac)) / 2a
+                </div>
+            </div>
+
+            <div class="test-area">
+                <span class="badge">Scientific Text</span>
+                <h3>Complex Process</h3>
+                <textarea>Photosynthesis is the process by which plants use sunlight, water and carbon dioxide to create oxygen and energy in the form of sugar. This occurs in the chloroplasts through the light-dependent and light-independent reactions.</textarea>
+            </div>
+
+            <div class="tip">
+                💡 <strong>Tip:</strong> The "Explain" command renders markdown and LaTeX math notation. The AI will format its response with proper headings, lists, and mathematical formulas for clarity. For this command, the "Accept" button just dismisses the popup since you're getting information rather than editing text.
+            </div>
+        </div>
+
+        <!-- Test: Different Element Types -->
+        <div class="test-section">
+            <h2><span class="icon">🧪</span> Test: Various Element Types</h2>
+            <p>The extension works with different types of editable and non-editable elements</p>
+
+            <div class="test-area">
+                <span class="badge">Paragraph Text</span>
+                <h3>Regular Paragraph (Non-editable)</h3>
+                <div class="selectable-text">
+                    <p>This is a regular paragraph of text that you can select and use with the AI extension. While you can't edit this directly, the AI can still process it. Try using "Suggest Rewrites" or "Explain" on any portion of this text.</p>
+                    <p>The extension intelligently captures context from the surrounding text (±200 characters) and the page title to provide better AI responses that understand the full context of what you're working on.</p>
+                </div>
+            </div>
+
+            <div class="test-area">
+                <span class="badge">Rich Text</span>
+                <h3>ContentEditable with Formatting</h3>
+                <div class="contenteditable" contenteditable="true">
+                    This is a <strong>contenteditable</strong> div that supports <em>rich text formatting</em>. You can select any part of this text and use the AI commands. The extension will preserve your cursor position and properly insert or replace text.
+                </div>
+            </div>
+
+            <div class="test-area">
+                <span class="badge">Long Form</span>
+                <h3>Multi-paragraph Textarea</h3>
+                <textarea style="min-height: 150px;">This is a longer textarea with multiple paragraphs to test how the extension handles larger amounts of text.
+
+The AI will use the surrounding context to better understand what you're writing about. This helps it provide more relevant suggestions and corrections.
+
+Try selecting just a sentence, a paragraph, or multiple paragraphs to see how the extension behaves in different scenarios. The context-aware feature means the AI knows what comes before and after your selection.</textarea>
+            </div>
+        </div>
+
+        <!-- Test: Keyboard Shortcuts -->
+        <div class="test-section">
+            <h2><span class="icon">⌨️</span> Test: Keyboard Shortcuts</h2>
+            <p>Test the quick menu feature using keyboard shortcuts</p>
+
+            <div class="test-area">
+                <h3>Quick Menu Test Area</h3>
+                <div class="contenteditable" contenteditable="true">
+                    Select this text and press <kbd class="keyboard-hint">Ctrl</kbd> + <kbd class="keyboard-hint">Shift</kbd> + <kbd class="keyboard-hint">Space</kbd> (or <kbd class="keyboard-hint">Cmd</kbd> + <kbd class="keyboard-hint">Shift</kbd> + <kbd class="keyboard-hint">Space</kbd> on Mac) to open the quick command menu.
+                </div>
+                <div class="tip">
+                    💡 <strong>Tip:</strong> The quick menu appears instantly when you use the keyboard shortcut. Navigate with <kbd class="keyboard-hint">↑</kbd> <kbd class="keyboard-hint">↓</kbd> arrow keys, select with <kbd class="keyboard-hint">Enter</kbd>, and close with <kbd class="keyboard-hint">Esc</kbd>. You can customize this shortcut in the extension settings!
+                </div>
+            </div>
+        </div>
+
+        <!-- Test: Context Awareness -->
+        <div class="test-section">
+            <h2><span class="icon">🧠</span> Test: Smart Context Awareness</h2>
+            <p>The extension captures surrounding text and page information for better AI understanding</p>
+
+            <div class="test-area">
+                <h3>Context-Rich Environment</h3>
+                <div class="selectable-text">
+                    <p><strong>Introduction:</strong> We are developing a new feature for our mobile application that will revolutionize how users interact with their data.</p>
+                    <p><strong>The feature:</strong> allows users to visualize their progress over time using interactive charts and graphs.</p>
+                    <p><strong>Implementation:</strong> We will use React Native with the Victory charts library to create smooth animations and responsive designs.</p>
+                </div>
+                <div class="tip">
+                    💡 <strong>Tip:</strong> Try selecting just "allows users to visualize their progress" - the AI will have access to the surrounding text to understand it's talking about a mobile app feature with React Native. This context makes the AI's suggestions much more relevant!
+                </div>
+            </div>
+        </div>
+
+        <!-- Test: Advanced Features -->
+        <div class="test-section">
+            <h2><span class="icon">🎨</span> Test: Advanced Features</h2>
+            <p>Test additional functionality like regeneration and custom instructions</p>
+
+            <div class="test-area">
+                <h3>Regenerate & Reprompt Testing</h3>
+                <textarea>Create a compelling headline for a new eco-friendly water bottle that keeps drinks cold for 48 hours.</textarea>
+                <div class="tip">
+                    💡 <strong>Tip:</strong> After the AI generates a response, click the dropdown menu (▼) to find options like "Regenerate" (try again with the same prompt) or "Add Instructions" (tell the AI what to change). This iterative refinement is perfect for getting exactly what you want!
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Content for Various Tests -->
+        <div class="test-section">
+            <h2><span class="icon">📝</span> More Sample Content</h2>
+            <p>Additional text samples for testing various scenarios</p>
+
+            <div class="feature-grid">
+                <div class="test-area">
+                    <span class="badge">Code Comment</span>
+                    <textarea>// This function calculates the fibonacci sequence recursively</textarea>
+                </div>
+
+                <div class="test-area">
+                    <span class="badge">Social Media</span>
+                    <textarea>Just launched our new product! 🚀 Check it out at our website. Link in bio.</textarea>
+                </div>
+
+                <div class="test-area">
+                    <span class="badge">Academic</span>
+                    <textarea>The results indicate a statistically significant correlation between the two variables (p < 0.05).</textarea>
+                </div>
+
+                <div class="test-area">
+                    <span class="badge">Creative</span>
+                    <textarea>The sunset painted the sky in shades of orange and pink</textarea>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>QuickAI Extension Test Playground</strong></p>
+            <p>Make sure the extension is installed and configured with your API key before testing.</p>
+            <p>Configure settings by clicking the QuickAI icon in your browser toolbar.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+
+            // Save preference
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+
+            // Notify extension about theme change (if it's listening)
+            if (typeof browser !== 'undefined' && browser.storage) {
+                browser.storage.sync.set({ theme: isDark ? 'dark' : 'light' });
+            }
+        }
+
+        // Load dark mode preference on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (savedDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        });
+
+        // Log selection for debugging
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            const text = selection.toString();
+            if (text.length > 0 && text.length < 100) {
+                console.log('Selected text:', text);
+            }
+        });
+    </script>
+</body>
+</html>

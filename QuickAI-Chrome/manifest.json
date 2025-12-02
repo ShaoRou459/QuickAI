@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "QuickAI",
+  "version": "1.0.0",
+  "description": "Lightning-fast AI text assistant with smart context awareness. Fix spelling, continue writing, get rewrites, and explain text instantly.",
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "QuickAI",
+    "default_icon": "icon.png"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["marked.min.js", "katex.min.js", "content.js"],
+      "css": ["katex.min.css", "content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["fonts/*.woff2", "icon.png", "options.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "48": "icon.png"
+  }
+}

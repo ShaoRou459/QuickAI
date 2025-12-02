@@ -63,10 +63,10 @@ const AI_PROVIDERS = {
 
 // Default prompts
 const DEFAULT_PROMPTS = {
-  'fix-spelling': 'Fix any spelling and grammar errors in the following text. Return only the corrected text without explanations:\n\n{text}',
-  'continue-writing': 'Continue writing the following text in the same style and tone. Write 2-3 sentences:\n\n{text}',
-  'suggest-rewrites': 'Suggest 3 alternative ways to rewrite the following text. Return each rewrite on a new line, numbered 1-3:\n\n{text}',
-  'explain': 'Explain the following text in simple, clear terms. Write in paragraph form without using bullet points or numbered lists. Use bold for emphasis if helpful. For math, use LaTeX notation with $ for inline and $$ for display math. Do not add any preamble like "Here\'s an explanation" - just provide the explanation directly:\n\n{text}',
+  'fix-spelling': 'Correct any spelling and grammar errors in the following text. Maintain the original tone and meaning. Do not change the formatting. Return strictly the corrected text, with no introductory or concluding remarks:\n\n{text}',
+  'continue-writing': 'Continue the following text, maintaining the exact same style, tone, and perspective. Add 2-3 concise, relevant sentences that flow naturally from the end. Do not repeat the input text. Provide only the continuation:\n\n{text}',
+  'suggest-rewrites': 'Rewrite the following text in 3 different ways to improve clarity and flow. Keep the same meaning. Output a numbered list (1-3) containing only the rewritten versions, with no introductions:\n\n{text}',
+  'explain': 'Explain the following text in simple, clear terms. Be concise and to the point. Write in paragraph form without using bullet points or numbered lists. Use bold for emphasis if helpful. For math, use LaTeX notation with $ for inline and $$ for display math. Do not add any preamble like "Here\'s an explanation" - just provide the explanation directly:\n\n{text}',
   'custom': '{instructions}\n\n{text}'
 };
 
@@ -217,9 +217,13 @@ async function createContextMenus() {
 }
 
 // Create context menu items on installation
-browser.runtime.onInstalled.addListener(() => {
+browser.runtime.onInstalled.addListener(({ reason }) => {
   console.log('AI Text Assistant: Extension installed/updated');
   createContextMenus();
+  
+  if (reason === 'install') {
+    browser.runtime.openOptionsPage();
+  }
 });
 
 // Create context menus on startup (browser restart)
@@ -279,8 +283,8 @@ async function sendMessageToTab(tabId, message, retries = 3) {
         // Last attempt failed - try to inject content script
         console.log('AI Text Assistant: Attempting to inject content script...');
         try {
-          await browser.tabs.executeScript(tabId, { file: 'content.js' });
-          await browser.tabs.insertCSS(tabId, { file: 'content.css' });
+          await browser.scripting.executeScript({ target: { tabId }, files: ['marked.min.js', 'katex.min.js', 'content.js'] });
+          await browser.scripting.insertCSS({ target: { tabId }, files: ['katex.min.css', 'content.css'] });
           // Wait a bit for script to initialize
           await new Promise(resolve => setTimeout(resolve, 200));
           // Try one more time
